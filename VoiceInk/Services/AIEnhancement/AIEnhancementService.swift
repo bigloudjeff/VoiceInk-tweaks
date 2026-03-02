@@ -474,9 +474,8 @@ class AIEnhancementService: ObservableObject {
     }
 
     func captureScreenContext() async {
-        guard CGPreflightScreenCaptureAccess() else {
-            return
-        }
+        guard useScreenCaptureContext else { return }
+        guard CGPreflightScreenCaptureAccess() else { return }
 
         if let capturedText = await screenCaptureService.captureAndExtractText() {
             await MainActor.run {
@@ -486,6 +485,7 @@ class AIEnhancementService: ObservableObject {
     }
 
     func captureClipboardContext() {
+        guard useClipboardContext else { return }
         lastCapturedClipboard = NSPasteboard.general.string(forType: .string)
     }
     
