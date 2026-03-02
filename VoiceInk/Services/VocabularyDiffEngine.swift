@@ -282,6 +282,41 @@ struct VocabularyDiffEngine {
    return false
   }
 
+  // Skip inflection-only changes (updates/update, crashed/crashes, clicking/click)
+  if isOnlyInflectionChange(raw: raw, enhanced: enhanced) {
+   return false
+  }
+
+  // Skip shorthand expansion -- when a single raw word is a prefix of the
+  // corrected word, the AI is expanding an abbreviation (perf -> performance),
+  // not correcting a mishearing. Real corrections change the word, not extend it.
+  if raw.count == 1 && enhanced.count == 1 && isShorthandExpansion(raw: raw[0], enhanced: enhanced[0]) {
+   return false
+  }
+
+  // Skip when raw and corrected have no phonetic resemblance --
+  // this means the AI rewrote the sentence rather than correcting a mishearing
+  if raw.count <= 2 && enhanced.count <= 2 && !hasPhoneticSimilarity(rawPhrase: rawPhrase, correctedPhrase: correctedPhrase) {
+   return false
+  }
+
+  // Skip multi-token corrections where raw and enhanced share no words --
+  // this indicates the AI rewrote the phrase rather than correcting a mishearing.
+  // Allow through if the overall phrases are phonetically similar (e.g. "Quinn3B" -> "Qwen 3B").
+  if (raw.count + enhanced.count) >= 3 && !hasWordOverlap(raw: raw, enhanced: enhanced) && !hasPhoneticSimilarity(rawPhrase: rawPhrase, correctedPhrase: correctedPhrase) {
+   return false
+  }
+
+  // Skip when character length ratio is extreme (e.g. "easily" vs "within the Espanzo plugin")
+  let rawLen = rawPhrase.count
+  let correctedLen = correctedPhrase.count
+  if rawLen > 0 && correctedLen > 0 {
+   let ratio = Double(max(rawLen, correctedLen)) / Double(min(rawLen, correctedLen))
+   if ratio > 3.0 {
+    return false
+   }
+  }
+
   return true
  }
 
@@ -295,10 +330,10 @@ struct VocabularyDiffEngine {
   return true
  }
 
- /// Detects "Mac only" vs "Mac-only" -- joining/splitting by hyphen
+ /// Detects "Mac only" vs "Mac-only" or "platform specific" vs "platform-specific"
  private static func isOnlyHyphenationChange(raw: [Token], enhanced: [Token]) -> Bool {
-  let rawJoined = raw.map { $0.normalized }.joined()
-  let enhancedJoined = enhanced.map { $0.normalized }.joined()
+  let rawJoined = raw.map { $0.normalized.replacingOccurrences(of: "-", with: "") }.joined()
+  let enhancedJoined = enhanced.map { $0.normalized.replacingOccurrences(of: "-", with: "") }.joined()
   return rawJoined == enhancedJoined
  }
 
@@ -308,5 +343,129 @@ struct VocabularyDiffEngine {
   let r = raw[0].normalized
   let e = enhanced[0].normalized.replacingOccurrences(of: "'s", with: "s")
   return r == e
+ }
+
+ /// Detects inflection-only changes by comparing word stems.
+ /// Catches: crashed/crashes, quantify/quantified, improved/improvements,
+ /// auto-detecting/auto-detection, click/clicking.
+ private static func isOnlyInflectionChange(raw: [Token], enhanced: [Token]) -> Bool {
+  guard raw.count == 1, enhanced.count == 1 else { return false }
+  let r = raw[0].normalized.replacingOccurrences(of: "-", with: "")
+  let e = enhanced[0].normalized.replacingOccurrences(of: "-", with: "")
+  guard r != e else { return false }
+
+  let rStems = Set(inflectionalStems(r))
+  let eStems = Set(inflectionalStems(e))
+  return !rStems.isDisjoint(with: eStems)
+ }
+
+ private static func inflectionalStems(_ word: String) -> [String] {
+  var stems = [word]
+  let suffixes = ["ments", "ment", "ation", "tion", "sion", "ion",
+                  "ness", "ings", "ing", "ied", "ies", "ers",
+                  "ed", "es", "er", "ly", "s", "d"]
+  for suffix in suffixes {
+   guard word.hasSuffix(suffix), word.count - suffix.count >= 3 else { continue }
+   let stem = String(word.dropLast(suffix.count))
+   stems.append(stem)
+   stems.append(stem + "e")
+   if suffix == "ied" || suffix == "ies" {
+    stems.append(stem + "y")
+   }
+  }
+  return stems
+ }
+
+ /// Detects shorthand expansion: raw word is a prefix of the corrected word
+ /// (e.g. "perf" -> "performance", "repro" -> "reproduce").
+ /// Excludes cases where the raw word is very short (<=2 chars) since those
+ /// could be genuine mishearings, and cases where the corrected word has
+ /// different casing (proper nouns like "Inator" -> "Typinator").
+ private static func isShorthandExpansion(raw: Token, enhanced: Token) -> Bool {
+  let r = raw.normalized
+  let e = enhanced.normalized
+  guard r.count > 2 else { return false }
+
+  // If the corrected word starts with the raw word, it's likely expansion
+  if e.hasPrefix(r) && e.count > r.count {
+   // Exception: if the corrected word has internal capitalization
+   // it's a proper noun (e.g. "Voice" -> "VoiceInk")
+   if enhanced.cleaned.dropFirst().contains(where: { $0.isUppercase }) {
+    return false
+   }
+   return true
+  }
+  return false
+ }
+
+ /// Checks if raw and corrected phrases share enough phonetic resemblance
+ /// to suggest a genuine mishearing rather than an AI rewrite.
+ private static func hasPhoneticSimilarity(rawPhrase: String, correctedPhrase: String) -> Bool {
+  let r = rawPhrase.lowercased()
+  let e = correctedPhrase.lowercased()
+
+  if r.count >= 2 && e.count >= 2 && r.prefix(2) == e.prefix(2) {
+   return true
+  }
+
+  if r.count >= 3 && e.contains(r) {
+   return true
+  }
+  if e.count >= 3 && r.contains(e) {
+   return true
+  }
+
+  let distance = levenshteinDistance(r, e)
+  let maxLen = max(r.count, e.count)
+  if maxLen > 0 && Double(distance) / Double(maxLen) < 0.6 {
+   return true
+  }
+
+  return false
+ }
+
+ /// Checks if any word from the raw side overlaps with any word from
+ /// the enhanced side (same word, shared stem, substring, or close phonetic match).
+ private static func hasWordOverlap(raw: [Token], enhanced: [Token]) -> Bool {
+  for r in raw {
+   for e in enhanced {
+    if r.normalized == e.normalized { return true }
+    if r.normalized.count >= 3 && e.normalized.contains(r.normalized) { return true }
+    if e.normalized.count >= 3 && r.normalized.contains(e.normalized) { return true }
+    let rStems = Set(inflectionalStems(r.normalized))
+    let eStems = Set(inflectionalStems(e.normalized))
+    if !rStems.isDisjoint(with: eStems) { return true }
+    // Per-word phonetic similarity (tight threshold to avoid false positives)
+    if r.normalized.count >= 3 && e.normalized.count >= 3 {
+     let dist = levenshteinDistance(r.normalized, e.normalized)
+     let maxLen = max(r.normalized.count, e.normalized.count)
+     if maxLen > 0 && Double(dist) / Double(maxLen) < 0.4 { return true }
+    }
+   }
+  }
+  return false
+ }
+
+ private static func levenshteinDistance(_ a: String, _ b: String) -> Int {
+  let a = Array(a)
+  let b = Array(b)
+  let m = a.count
+  let n = b.count
+
+  if m == 0 { return n }
+  if n == 0 { return m }
+
+  var prev = Array(0...n)
+  var curr = Array(repeating: 0, count: n + 1)
+
+  for i in 1...m {
+   curr[0] = i
+   for j in 1...n {
+    let cost = a[i - 1] == b[j - 1] ? 0 : 1
+    curr[j] = min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost)
+   }
+   prev = curr
+  }
+  return prev[n]
  }
 }
