@@ -106,6 +106,7 @@ struct VoiceInkApp: App {
         EnhancementQueueService.shared.configure(aiService: aiService, modelContainer: container)
         VocabularySuggestionService.shared.configure(modelContainer: container)
         PhoneticHintMiningService.shared.configure(modelContainer: container)
+        AppServiceLocator.shared.configure(whisperState: whisperState, enhancementService: enhancementService, modelContainer: container)
 
         let activeWindowService = ActiveWindowService.shared
         activeWindowService.configure(with: enhancementService)

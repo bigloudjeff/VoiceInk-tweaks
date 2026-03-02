@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+<dictionary title="VoiceInk Scripting Dictionary">
+
+ <suite name="Standard Suite" code="????" description="Common classes and commands for all applications.">
+  <command name="quit" code="aevtquit" description="Quit the application.">
+   <cocoa class="NSQuitCommand"/>
+  </command>
+ </suite>
+
+ <suite name="VoiceInk Suite" code="VoIk" description="VoiceInk commands and properties.">
+
+  <!-- Application class with read-only properties -->
+  <class name="application" code="capp" description="The VoiceInk application.">
+   <cocoa class="NSApplication"/>
+   <property name="recording state" code="VkRS" type="text" access="r"
+    description="The current recording state (idle, starting, recording, transcribing, enhancing, busy).">
+    <cocoa key="scriptRecordingState"/>
+   </property>
+   <property name="enhancement enabled" code="VkEE" type="boolean" access="r"
+    description="Whether AI enhancement is currently enabled.">
+    <cocoa key="scriptEnhancementEnabled"/>
+   </property>
+   <property name="enhancement mode" code="VkEM" type="text" access="r"
+    description="The current enhancement mode (off, on, background).">
+    <cocoa key="scriptEnhancementMode"/>
+   </property>
+   <property name="active prompt name" code="VkPN" type="text" access="r"
+    description="The name of the currently selected enhancement prompt.">
+    <cocoa key="scriptActivePromptName"/>
+   </property>
+   <property name="active power mode" code="VkPM" type="text" access="r"
+    description="The name of the currently active Power Mode, or empty if none.">
+    <cocoa key="scriptActivePowerMode"/>
+   </property>
+  </class>
+
+  <!-- Commands -->
+  <command name="toggle recording" code="VoIkTgRc" description="Toggle the VoiceInk recorder on or off.">
+   <cocoa class="VoiceInk.ToggleRecordingCommand"/>
+   <result type="text" description="The result status."/>
+  </command>
+
+  <command name="dismiss recorder" code="VoIkDsRc" description="Dismiss the VoiceInk recorder.">
+   <cocoa class="VoiceInk.DismissRecorderCommand"/>
+   <result type="text" description="The result status."/>
+  </command>
+
+  <command name="toggle enhancement" code="VoIkTgEn" description="Toggle AI enhancement on or off.">
+   <cocoa class="VoiceInk.ToggleEnhancementCommand"/>
+   <result type="text" description="The new enhancement state."/>
+  </command>
+
+  <command name="set enhancement mode" code="VoIkSEMd" description="Set the enhancement mode.">
+   <cocoa class="VoiceInk.SetEnhancementModeCommand"/>
+   <direct-parameter type="text" description="The mode: off, on, or background."/>
+   <result type="text" description="The new enhancement mode."/>
+  </command>
+
+  <command name="select prompt" code="VoIkSlPr" description="Select an enhancement prompt by name.">
+   <cocoa class="VoiceInk.SelectPromptCommand"/>
+   <direct-parameter type="text" description="The prompt name."/>
+   <result type="text" description="The selected prompt name or error."/>
+  </command>
+
+  <command name="activate power mode" code="VoIkAcPM" description="Activate a Power Mode by name.">
+   <cocoa class="VoiceInk.ActivatePowerModeCommand"/>
+   <direct-parameter type="text" description="The Power Mode name."/>
+   <result type="text" description="The activated Power Mode name or error."/>
+  </command>
+
+  <command name="deactivate power mode" code="VoIkDaPM" description="Deactivate the current Power Mode.">
+   <cocoa class="VoiceInk.DeactivatePowerModeCommand"/>
+   <result type="text" description="The result status."/>
+  </command>
+
+  <command name="toggle screen context" code="VoIkTgSC" description="Toggle screen context capture.">
+   <cocoa class="VoiceInk.ToggleScreenContextCommand"/>
+   <result type="text" description="The new screen context state."/>
+  </command>
+
+  <command name="toggle clipboard context" code="VoIkTgCC" description="Toggle clipboard context.">
+   <cocoa class="VoiceInk.ToggleClipboardContextCommand"/>
+   <result type="text" description="The new clipboard context state."/>
+  </command>
+
+  <command name="get last transcription" code="VoIkGtLT" description="Get the most recent transcription.">
+   <cocoa class="VoiceInk.GetLastTranscriptionCommand"/>
+   <result type="text" description="The transcription text."/>
+  </command>
+
+  <command name="set language" code="VoIkStLg" description="Set the transcription language.">
+   <cocoa class="VoiceInk.SetLanguageCommand"/>
+   <direct-parameter type="text" description="The language code (e.g. en, fr, auto)."/>
+   <result type="text" description="The new language code."/>
+  </command>
+
+ </suite>
+</dictionary>
