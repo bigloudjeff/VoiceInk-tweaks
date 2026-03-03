@@ -195,7 +195,7 @@ extension WhisperState {
             self.downloadProgress.removeValue(forKey: model.name + "_main")
 
             if shouldWarmup(model) {
-                WhisperModelWarmupCoordinator.shared.scheduleWarmup(for: model, whisperState: self)
+                WhisperModelWarmupCoordinator.shared.scheduleWarmup(for: model, contextProvider: self)
             }
         } catch {
             handleModelDownloadError(model, error)

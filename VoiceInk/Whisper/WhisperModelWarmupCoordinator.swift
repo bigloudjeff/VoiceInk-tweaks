@@ -13,34 +13,32 @@ final class WhisperModelWarmupCoordinator: ObservableObject {
         warmingModels.contains(name)
     }
     
-    func scheduleWarmup(for model: LocalModel, whisperState: WhisperState) {
+    func scheduleWarmup(for model: LocalModel, contextProvider: any WhisperContextProvider) {
         guard shouldWarmup(modelName: model.name),
               !warmingModels.contains(model.name) else {
             return
         }
-        
+
         warmingModels.insert(model.name)
-        
+
         Task {
             do {
-                try await runWarmup(for: model, whisperState: whisperState)
+                try await runWarmup(for: model, contextProvider: contextProvider)
             } catch {
-                await MainActor.run {
-                    whisperState.logger.error("Warmup failed for \(model.name, privacy: .public): \(error.localizedDescription, privacy: .public)")
-                }
+                // Warmup failure is non-critical
             }
-            
+
             await MainActor.run {
                 self.warmingModels.remove(model.name)
             }
         }
     }
-    
-    private func runWarmup(for model: LocalModel, whisperState: WhisperState) async throws {
+
+    private func runWarmup(for model: LocalModel, contextProvider: any WhisperContextProvider) async throws {
         guard let sampleURL = warmupSampleURL() else { return }
         let service = LocalTranscriptionService(
-            modelsDirectory: whisperState.modelsDirectory,
-            whisperState: whisperState
+            modelsDirectory: contextProvider.modelsDirectory,
+            contextProvider: contextProvider
         )
         _ = try await service.transcribe(audioURL: sampleURL, model: model)
     }

@@ -17,7 +17,7 @@ enum RecordingState: Equatable {
 }
 
 @MainActor
-class WhisperState: NSObject, ObservableObject {
+class WhisperState: NSObject, ObservableObject, WhisperContextProvider {
  @Published var recordingState: RecordingState = .idle
  @Published var isModelLoaded = false
  @Published var loadedLocalModel: WhisperModel?
@@ -150,7 +150,7 @@ class WhisperState: NSObject, ObservableObject {
  }
 
  // Initialize the transcription service registry
- self.serviceRegistry = TranscriptionServiceRegistry(whisperState: self, modelsDirectory: self.modelsDirectory)
+ self.serviceRegistry = TranscriptionServiceRegistry(contextProvider: self, modelContext: self.modelContext, modelsDirectory: self.modelsDirectory)
  
  setupNotifications()
  createModelsDirectoryIfNeeded()
