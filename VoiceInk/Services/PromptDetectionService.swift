@@ -76,7 +76,7 @@ class PromptDetectionService {
         }
     }
     
-	private func stripLeadingTriggerWord(from text: String, triggerWord: String) -> String? {
+	func stripLeadingTriggerWord(from text: String, triggerWord: String) -> String? {
         let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let lowerText = trimmedText.lowercased()
         let lowerTrigger = triggerWord.lowercased()
@@ -113,7 +113,7 @@ class PromptDetectionService {
         return remainingText
     }
     
-	private func stripTrailingTriggerWord(from text: String, triggerWord: String) -> String? {
+	func stripTrailingTriggerWord(from text: String, triggerWord: String) -> String? {
         var trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
 
         let punctuationSet = CharacterSet(charactersIn: ",.!?;:")
@@ -150,7 +150,7 @@ class PromptDetectionService {
         return remainingText
     }
     
-	private func detectAndStripTriggerWord(from text: String, triggerWords: [String]) -> (String, String)? {
+	func detectAndStripTriggerWord(from text: String, triggerWords: [String]) -> (String, String)? {
         let trimmedWords = triggerWords.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
         

@@ -31,9 +31,9 @@ enum PowerModeValidationError: Error, Identifiable {
 }
 
 struct PowerModeValidator {
-    private let powerModeManager: PowerModeManager
-    
-    init(powerModeManager: PowerModeManager) {
+    private let powerModeManager: PowerModeProviding
+
+    init(powerModeManager: PowerModeProviding) {
         self.powerModeManager = powerModeManager
     }
     

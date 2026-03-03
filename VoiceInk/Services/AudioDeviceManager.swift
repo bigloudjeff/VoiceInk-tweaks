@@ -313,15 +313,20 @@ class AudioDeviceManager: ObservableObject {
  }
  
  private func loadPrioritizedDevices() {
- if let data = UserDefaults.standard.prioritizedDevicesData,
- let devices = try? JSONDecoder().decode([PrioritizedDevice].self, from: data) {
- prioritizedDevices = devices
+ guard let data = UserDefaults.standard.prioritizedDevicesData else { return }
+ do {
+  prioritizedDevices = try JSONDecoder().decode([PrioritizedDevice].self, from: data)
+ } catch {
+  logger.error("Failed to decode prioritized devices: \(error.localizedDescription, privacy: .public)")
  }
  }
  
  func savePrioritizedDevices() {
- if let data = try? JSONEncoder().encode(prioritizedDevices) {
- UserDefaults.standard.prioritizedDevicesData = data
+ do {
+  let data = try JSONEncoder().encode(prioritizedDevices)
+  UserDefaults.standard.prioritizedDevicesData = data
+ } catch {
+  logger.error("Failed to encode prioritized devices: \(error.localizedDescription, privacy: .public)")
  }
  }
  

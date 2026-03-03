@@ -78,8 +78,11 @@ class AIEnhancementService: ObservableObject {
 
     @Published var customPrompts: [CustomPrompt] {
         didSet {
-            if let encoded = try? JSONEncoder().encode(customPrompts) {
+            do {
+                let encoded = try JSONEncoder().encode(customPrompts)
                 UserDefaults.standard.set(encoded, forKey: UserDefaults.Keys.customPrompts)
+            } catch {
+                logger.error("Failed to encode custom prompts: \(error.localizedDescription, privacy: .public)")
             }
         }
     }
@@ -143,9 +146,13 @@ class AIEnhancementService: ObservableObject {
         self.useClipboardContext = UserDefaults.standard.bool(forKey: UserDefaults.Keys.useClipboardContext)
         self.useScreenCaptureContext = UserDefaults.standard.bool(forKey: UserDefaults.Keys.useScreenCaptureContext)
 
-        if let savedPromptsData = UserDefaults.standard.data(forKey: UserDefaults.Keys.customPrompts),
-           let decodedPrompts = try? JSONDecoder().decode([CustomPrompt].self, from: savedPromptsData) {
-            self.customPrompts = decodedPrompts
+        if let savedPromptsData = UserDefaults.standard.data(forKey: UserDefaults.Keys.customPrompts) {
+            do {
+                self.customPrompts = try JSONDecoder().decode([CustomPrompt].self, from: savedPromptsData)
+            } catch {
+                logger.error("Failed to decode custom prompts: \(error.localizedDescription, privacy: .public)")
+                self.customPrompts = []
+            }
         } else {
             self.customPrompts = []
         }
