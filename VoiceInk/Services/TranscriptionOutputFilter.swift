@@ -9,7 +9,7 @@ struct TranscriptionOutputFilter {
  [#"\[.*?\]"#, #"\(.*?\)"#, #"\{.*?\}"#].compactMap { try? NSRegularExpression(pattern: $0) }
  }()
 
- static func filter(_ text: String) -> String {
+ static func filter(_ text: String, fillerWordProvider: FillerWordProviding = FillerWordManager.shared) -> String {
  var filteredText = text
 
  // Remove <TAG>...</TAG> blocks
@@ -25,7 +25,7 @@ struct TranscriptionOutputFilter {
  }
 
  // Remove filler words (if enabled)
- filteredText = removeFillerWords(from: filteredText, isEnabled: FillerWordManager.shared.isEnabled, fillerWords: FillerWordManager.shared.fillerWords)
+ filteredText = removeFillerWords(from: filteredText, isEnabled: fillerWordProvider.isEnabled, fillerWords: fillerWordProvider.fillerWords)
 
  // Clean whitespace
  filteredText = filteredText.replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
