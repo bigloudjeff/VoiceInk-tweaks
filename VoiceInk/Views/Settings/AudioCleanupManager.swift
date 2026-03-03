@@ -85,10 +85,11 @@ class AudioCleanupManager {
                 return (fileCount, totalSize, eligibleTranscriptions)
             }
         } catch {
+            logger.error("Failed to fetch cleanup info: \(error.localizedDescription, privacy: .public)")
             return (0, 0, [])
         }
     }
-    
+
     /// Perform the cleanup operation
     private func performCleanup(modelContext: ModelContext) async {
         // Get retention period from UserDefaults
@@ -128,7 +129,7 @@ class AudioCleanupManager {
                             transcription.audioFileURL = nil
                             deletedCount += 1
                         } catch {
-                            // Skip this file - don't update audioFileURL if deletion failed
+                            logger.warning("Failed to delete audio file at \(url.path, privacy: .private): \(error.localizedDescription, privacy: .public)")
                         }
                     }
                 }
@@ -138,7 +139,7 @@ class AudioCleanupManager {
                 }
             }
         } catch {
-            // Silently fail - cleanup is non-critical
+            logger.error("Audio cleanup failed: \(error.localizedDescription, privacy: .public)")
         }
     }
     
@@ -164,6 +165,7 @@ class AudioCleanupManager {
                             transcription.audioFileURL = nil
                             deletedCount += 1
                         } catch {
+                            logger.warning("Failed to delete audio file: \(error.localizedDescription, privacy: .public)")
                             errorCount += 1
                         }
                     }
@@ -176,10 +178,11 @@ class AudioCleanupManager {
                 return (deletedCount, errorCount)
             }
         } catch {
+            logger.error("Audio cleanup for transcriptions failed: \(error.localizedDescription, privacy: .public)")
             return (0, 0)
         }
     }
-    
+
     /// Format file size in human-readable form
     func formatFileSize(_ size: Int64) -> String {
         let byteCountFormatter = ByteCountFormatter()

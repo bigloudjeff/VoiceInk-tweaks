@@ -29,6 +29,7 @@ struct APIKeyManagementView: View {
                     Circle()
                         .fill(Color.green)
                         .frame(width: 8, height: 8)
+                        .accessibilityLabel("\(aiService.selectedProvider.rawValue) API key connected")
                     Text("Connected")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
@@ -37,10 +38,12 @@ struct APIKeyManagementView: View {
                     if isCheckingOllama {
                         ProgressView()
                             .controlSize(.small)
+                            .accessibilityLabel("Checking Ollama connection")
                     } else if !ollamaModels.isEmpty {
                         Circle()
                             .fill(Color.green)
                             .frame(width: 8, height: 8)
+                            .accessibilityLabel("Ollama connected")
                         Text("Connected")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
@@ -48,6 +51,7 @@ struct APIKeyManagementView: View {
                         Circle()
                             .fill(Color.red)
                             .frame(width: 8, height: 8)
+                            .accessibilityLabel("Ollama disconnected")
                         Text("Disconnected")
                             .font(.subheadline)
                             .foregroundColor(.secondary)

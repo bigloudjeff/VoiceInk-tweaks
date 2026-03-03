@@ -46,8 +46,8 @@ actor WhisperContext {
             params.language = nil
         }
         
-        if prompt != nil {
-            promptCString = Array(prompt!.utf8CString)
+        if let prompt = prompt {
+            promptCString = Array(prompt.utf8CString)
             params.initial_prompt = promptCString?.withUnsafeBufferPointer { ptr in
                 ptr.baseAddress
             }

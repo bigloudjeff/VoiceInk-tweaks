@@ -22,9 +22,10 @@ struct TranscribeAudioFileIntent: AppIntent {
    return .result(value: "", dialog: "No transcription model is selected")
   }
 
-  // Write intent file data to a temporary location
+  // Write intent file data to a temporary location (sanitize to prevent path traversal)
   let tempDir = FileManager.default.temporaryDirectory
-  let fileName = file.filename ?? "voiceink_intent_audio.wav"
+  let rawName = file.filename ?? "voiceink_intent_audio.wav"
+  let fileName = URL(fileURLWithPath: rawName).lastPathComponent
   let tempURL = tempDir.appendingPathComponent(fileName)
 
   try file.data.write(to: tempURL)
