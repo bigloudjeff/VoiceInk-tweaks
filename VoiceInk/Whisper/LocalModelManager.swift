@@ -22,6 +22,7 @@ class LocalModelManager {
 
  let modelsDirectory: URL
  private let modelContext: ModelContext
+ private let notificationPresenter: any NotificationPresenting
  let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "LocalModelManager")
 
  weak var delegate: LocalModelManagerDelegate?
@@ -45,9 +46,10 @@ class LocalModelManager {
   didSet { delegate?.localModelManagerDidUpdateLoadedLocalModel(loadedLocalModel) }
  }
 
- init(modelsDirectory: URL, modelContext: ModelContext) {
+ init(modelsDirectory: URL, modelContext: ModelContext, notificationPresenter: any NotificationPresenting = NotificationManager.shared) {
   self.modelsDirectory = modelsDirectory
   self.modelContext = modelContext
+  self.notificationPresenter = notificationPresenter
  }
 
  // MARK: - Model Directory Management
@@ -326,7 +328,7 @@ class LocalModelManager {
   let destinationURL = modelsDirectory.appendingPathComponent("\(baseName).bin")
 
   if FileManager.default.fileExists(atPath: destinationURL.path) {
-   await NotificationManager.shared.showNotification(
+   await notificationPresenter.showNotification(
     title: "A model named \(baseName).bin already exists",
     type: .warning,
     duration: 4.0
@@ -344,14 +346,14 @@ class LocalModelManager {
    let imported = ImportedLocalModel(fileBaseName: baseName)
    delegate?.localModelManagerDidImportModel(name: baseName, asTranscriptionModel: imported)
 
-   await NotificationManager.shared.showNotification(
+   await notificationPresenter.showNotification(
     title: "Imported \(destinationURL.lastPathComponent)",
     type: .success,
     duration: 3.0
    )
   } catch {
    logError("Failed to import local model", error)
-   await NotificationManager.shared.showNotification(
+   await notificationPresenter.showNotification(
     title: "Failed to import model: \(error.localizedDescription)",
     type: .error,
     duration: 5.0
