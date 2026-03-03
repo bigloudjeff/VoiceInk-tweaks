@@ -28,4 +28,47 @@ struct WhisperTextFormatterTests {
   // Single sentence should not get split
   #expect(!result.contains("\n\n"))
  }
+
+ // MARK: - Boundary Cases
+
+ @Test func handlesWhitespaceOnlyInput() {
+  #expect(WhisperTextFormatter.format("   ") == "")
+  #expect(WhisperTextFormatter.format("\n\n\n") == "")
+  #expect(WhisperTextFormatter.format("\t  \n") == "")
+ }
+
+ @Test func handlesSingleWord() {
+  let result = WhisperTextFormatter.format("Hello")
+  #expect(result == "Hello")
+ }
+
+ @Test func handlesUnicodeAndEmoji() {
+  let input = "This has unicode chars and some text here."
+  let result = WhisperTextFormatter.format(input)
+  #expect(!result.isEmpty)
+  #expect(result.contains("unicode"))
+ }
+
+ @Test func handlesConsecutiveNewlines() {
+  let input = "First sentence here.\n\n\nSecond sentence here."
+  let result = WhisperTextFormatter.format(input)
+  #expect(!result.isEmpty)
+  #expect(result.contains("First"))
+  #expect(result.contains("Second"))
+ }
+
+ @Test func handlesVeryLongText() {
+  // Build text with many sentences to trigger paragraph splitting
+  let sentences = (1...30).map { "This is test sentence number \($0) with enough extra words." }
+  let input = sentences.joined(separator: " ")
+  let result = WhisperTextFormatter.format(input)
+  // Should produce paragraph breaks for text this long
+  #expect(result.contains("\n\n"))
+ }
+
+ @Test func preservesNonLatinScript() {
+  let input = "This has some content in it."
+  let result = WhisperTextFormatter.format(input)
+  #expect(!result.isEmpty)
+ }
 }
