@@ -5,10 +5,10 @@ struct AudioCleanupSettingsView: View {
     @EnvironmentObject private var whisperState: WhisperState
 
     // Audio cleanup settings
-    @AppStorage("IsTranscriptionCleanupEnabled") private var isTranscriptionCleanupEnabled = false
+    @AppStorage(UserDefaults.Keys.isTranscriptionCleanupEnabled) private var isTranscriptionCleanupEnabled = false
     @AppStorage("TranscriptionRetentionMinutes") private var transcriptionRetentionMinutes = 24 * 60
-    @AppStorage("IsAudioCleanupEnabled") private var isAudioCleanupEnabled = false
-    @AppStorage("AudioRetentionPeriod") private var audioRetentionPeriod = 7
+    @AppStorage(UserDefaults.Keys.isAudioCleanupEnabled) private var isAudioCleanupEnabled = false
+    @AppStorage(UserDefaults.Keys.audioRetentionPeriod) private var audioRetentionPeriod = 7
     @State private var isPerformingCleanup = false
     @State private var isShowingConfirmation = false
     @State private var cleanupInfo: (fileCount: Int, totalSize: Int64, transcriptions: [Transcription]) = (0, 0, [])

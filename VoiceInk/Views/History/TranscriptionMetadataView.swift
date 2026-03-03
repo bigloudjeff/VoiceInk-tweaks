@@ -1,7 +1,9 @@
 import SwiftUI
 import SwiftData
+import os
 
 struct TranscriptionMetadataView: View {
+    private static let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "TranscriptionMetadataView")
     @Environment(\.modelContext) private var modelContext
     let transcription: Transcription
     private let fileExportService = TranscriptionFileExportService()
@@ -27,7 +29,11 @@ struct TranscriptionMetadataView: View {
 
                         Button(action: {
                             transcription.isPinned.toggle()
-                            try? modelContext.save()
+                            do {
+                                try modelContext.save()
+                            } catch {
+                                Self.logger.error("Failed to save pin state: \(error.localizedDescription, privacy: .public)")
+                            }
                         }) {
                             Image(systemName: transcription.isPinned ? "pin.fill" : "pin")
                                 .font(.system(size: 12, weight: .medium))

@@ -88,7 +88,7 @@ extension WhisperState {
             whisperContext = try await WhisperContext.createContext(path: model.url.path)
             
             // Set the prompt from UserDefaults to ensure we have the latest
-            let basePrompt = UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? whisperPrompt.transcriptionPrompt
+            let basePrompt = UserDefaults.standard.string(forKey: UserDefaults.Keys.transcriptionPrompt) ?? whisperPrompt.transcriptionPrompt
             let vocabularyString = CustomVocabularyService.shared.getTranscriptionVocabulary(from: modelContext)
             let fullPrompt = vocabularyString.isEmpty ? basePrompt : basePrompt + " " + vocabularyString
             await whisperContext?.setPrompt(fullPrompt)
@@ -296,7 +296,7 @@ extension WhisperState {
             if currentTranscriptionModel?.name == model.name {
 
                 currentTranscriptionModel = nil
-                UserDefaults.standard.removeObject(forKey: "CurrentTranscriptionModel")
+                UserDefaults.standard.removeObject(forKey: UserDefaults.Keys.currentTranscriptionModel)
 
                 loadedLocalModel = nil
                 recordingState = .idle

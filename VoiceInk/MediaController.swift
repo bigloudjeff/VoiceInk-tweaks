@@ -10,12 +10,12 @@ final class MediaController: ObservableObject {
     private var unmuteTask: Task<Void, Never>?
     private var muteGeneration: Int = 0
 
-    @Published var isSystemMuteEnabled: Bool = UserDefaults.standard.bool(forKey: "isSystemMuteEnabled") {
-        didSet { UserDefaults.standard.set(isSystemMuteEnabled, forKey: "isSystemMuteEnabled") }
+    @Published var isSystemMuteEnabled: Bool = UserDefaults.standard.bool(forKey: UserDefaults.Keys.isSystemMuteEnabled) {
+        didSet { UserDefaults.standard.set(isSystemMuteEnabled, forKey: UserDefaults.Keys.isSystemMuteEnabled) }
     }
 
-    @Published var audioResumptionDelay: Double = UserDefaults.standard.double(forKey: "audioResumptionDelay") {
-        didSet { UserDefaults.standard.set(audioResumptionDelay, forKey: "audioResumptionDelay") }
+    @Published var audioResumptionDelay: Double = UserDefaults.standard.double(forKey: UserDefaults.Keys.audioResumptionDelay) {
+        didSet { UserDefaults.standard.set(audioResumptionDelay, forKey: UserDefaults.Keys.audioResumptionDelay) }
     }
 
     private init() {}

@@ -13,7 +13,7 @@ struct SetLanguageIntent: AppIntent {
  @MainActor
  func perform() async throws -> some IntentResult & ProvidesDialog {
   let code = languageCode.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-  UserDefaults.standard.set(code, forKey: "SelectedLanguage")
+  UserDefaults.standard.set(code, forKey: UserDefaults.Keys.selectedLanguage)
   NotificationCenter.default.post(name: .languageDidChange, object: nil)
   return .result(dialog: "Language set to \"\(code)\"")
  }

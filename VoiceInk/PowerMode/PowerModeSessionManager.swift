@@ -1,5 +1,6 @@
 import Foundation
 import AppKit
+import os
 
 struct ApplicationState: Codable {
     var enhancementMode: String
@@ -57,6 +58,7 @@ struct PowerModeSession: Codable {
 @MainActor
 class PowerModeSessionManager {
     static let shared = PowerModeSessionManager()
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "PowerModeSessionManager")
     private let sessionKey = "powerModeActiveSession.v1"
     private var isApplyingPowerModeConfig = false
 
@@ -74,7 +76,7 @@ class PowerModeSessionManager {
 
     func beginSession(with config: PowerModeConfig) async {
         guard let whisperState = whisperState, let enhancementService = enhancementService else {
-            print("SessionManager not configured.")
+            logger.warning("SessionManager not configured.")
             return
         }
 
@@ -86,7 +88,7 @@ class PowerModeSessionManager {
                 selectedPromptId: enhancementService.selectedPromptId?.uuidString,
                 selectedAIProvider: enhancementService.getAIService()?.selectedProvider.rawValue,
                 selectedAIModel: enhancementService.getAIService()?.currentModel,
-                selectedLanguage: UserDefaults.standard.string(forKey: "SelectedLanguage"),
+                selectedLanguage: UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage),
                 transcriptionModelName: whisperState.currentTranscriptionModel?.name
             )
 
@@ -133,7 +135,7 @@ class PowerModeSessionManager {
             selectedPromptId: enhancementService.selectedPromptId?.uuidString,
             selectedAIProvider: enhancementService.getAIService()?.selectedProvider.rawValue,
             selectedAIModel: enhancementService.getAIService()?.currentModel,
-            selectedLanguage: UserDefaults.standard.string(forKey: "SelectedLanguage"),
+            selectedLanguage: UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage),
             transcriptionModelName: whisperState.currentTranscriptionModel?.name
         )
         
@@ -170,7 +172,7 @@ class PowerModeSessionManager {
             }
 
             if let language = config.selectedLanguage {
-                UserDefaults.standard.set(language, forKey: "SelectedLanguage")
+                UserDefaults.standard.set(language, forKey: UserDefaults.Keys.selectedLanguage)
                 NotificationCenter.default.post(name: .languageDidChange, object: nil)
             }
         }
@@ -205,7 +207,7 @@ class PowerModeSessionManager {
             }
 
             if let language = state.selectedLanguage {
-                UserDefaults.standard.set(language, forKey: "SelectedLanguage")
+                UserDefaults.standard.set(language, forKey: UserDefaults.Keys.selectedLanguage)
                 NotificationCenter.default.post(name: .languageDidChange, object: nil)
             }
         }
@@ -230,7 +232,7 @@ class PowerModeSessionManager {
                 do {
                     try await whisperState.loadModel(localModel)
                 } catch {
-                    print("Power Mode: Failed to load local model '\(localModel.name)': \(error)")
+                    logger.error("Power Mode: Failed to load local model '\(localModel.name, privacy: .public)': \(error.localizedDescription, privacy: .public)")
                 }
             }
         case .parakeet:
@@ -243,7 +245,7 @@ class PowerModeSessionManager {
     
     private func recoverSession() {
         guard let session = loadSession() else { return }
-        print("Recovering abandoned Power Mode session.")
+        logger.notice("Recovering abandoned Power Mode session.")
         Task {
             await endSession()
         }
@@ -254,7 +256,7 @@ class PowerModeSessionManager {
             let data = try JSONEncoder().encode(session)
             UserDefaults.standard.set(data, forKey: sessionKey)
         } catch {
-            print("Error saving Power Mode session: \(error)")
+            logger.error("Error saving Power Mode session: \(error.localizedDescription, privacy: .public)")
         }
     }
     
@@ -263,7 +265,7 @@ class PowerModeSessionManager {
         do {
             return try JSONDecoder().decode(PowerModeSession.self, from: data)
         } catch {
-            print("Error loading Power Mode session: \(error)")
+            logger.error("Error loading Power Mode session: \(error.localizedDescription, privacy: .public)")
             return nil
         }
     }

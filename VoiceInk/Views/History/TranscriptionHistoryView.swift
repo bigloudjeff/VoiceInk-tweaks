@@ -1,7 +1,9 @@
 import SwiftUI
 import SwiftData
+import os
 
 struct TranscriptionHistoryView: View {
+    private static let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "TranscriptionHistoryView")
     @Environment(\.modelContext) private var modelContext
     @State private var searchText = ""
     @State private var selectedTranscription: Transcription?
@@ -545,7 +547,7 @@ struct TranscriptionHistoryView: View {
             hasMoreContent = items.count == pageSize
             updateAvailableFilterOptions()
         } catch {
-            print("Error loading transcriptions: \(error)")
+            Self.logger.error("Error loading transcriptions: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -563,7 +565,7 @@ struct TranscriptionHistoryView: View {
             hasMoreContent = newItems.count == pageSize
             updateAvailableFilterOptions()
         } catch {
-            print("Error loading more transcriptions: \(error)")
+            Self.logger.error("Error loading more transcriptions: \(error.localizedDescription, privacy: .public)")
         }
     }
     
@@ -603,7 +605,7 @@ struct TranscriptionHistoryView: View {
             do {
                 try FileManager.default.removeItem(at: url)
             } catch {
-                print("Error deleting audio file: \(error.localizedDescription)")
+                Self.logger.error("Error deleting audio file: \(error.localizedDescription, privacy: .public)")
             }
         }
 
@@ -621,7 +623,7 @@ struct TranscriptionHistoryView: View {
             NotificationCenter.default.post(name: .transcriptionDeleted, object: nil)
             await loadInitialContent()
         } catch {
-            print("Error saving deletion: \(error.localizedDescription)")
+            Self.logger.error("Error saving deletion: \(error.localizedDescription, privacy: .public)")
             await loadInitialContent()
         }
     }
@@ -654,7 +656,11 @@ struct TranscriptionHistoryView: View {
         for transcription in selectedTranscriptions {
             transcription.isPinned = !allPinned
         }
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            Self.logger.error("Failed to save pin state: \(error.localizedDescription, privacy: .public)")
+        }
     }
     
     private func toggleSelection(_ transcription: Transcription) {
@@ -709,7 +715,7 @@ struct TranscriptionHistoryView: View {
                 selectedTranscriptions = Set(filtered)
             }
         } catch {
-            print("Error selecting all transcriptions: \(error)")
+            Self.logger.error("Error selecting all transcriptions: \(error.localizedDescription, privacy: .public)")
         }
     }
 }

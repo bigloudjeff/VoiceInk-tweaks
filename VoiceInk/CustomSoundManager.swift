@@ -117,7 +117,7 @@ class CustomSoundManager: ObservableObject {
     }
 
     private func notifyCustomSoundsChanged() {
-        NotificationCenter.default.post(name: NSNotification.Name("CustomSoundsChanged"), object: nil)
+        NotificationCenter.default.post(name: .customSoundsChanged, object: nil)
     }
 
     func getSoundDisplayName(for type: SoundType) -> String? {

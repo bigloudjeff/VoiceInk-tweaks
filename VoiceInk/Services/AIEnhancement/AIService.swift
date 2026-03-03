@@ -40,9 +40,9 @@ enum AIProvider: String, CaseIterable {
         case .soniox:
             return "https://api.soniox.com/v1"
         case .ollama:
-            return UserDefaults.standard.string(forKey: "ollamaBaseURL") ?? "http://localhost:11434"
+            return UserDefaults.standard.string(forKey: UserDefaults.Keys.ollamaBaseURL) ?? "http://localhost:11434"
         case .custom:
-            return UserDefaults.standard.string(forKey: "customProviderBaseURL") ?? ""
+            return UserDefaults.standard.string(forKey: UserDefaults.Keys.customProviderBaseURL) ?? ""
         }
     }
     
@@ -67,9 +67,9 @@ enum AIProvider: String, CaseIterable {
         case .soniox:
             return "stt-async-v4"
         case .ollama:
-            return UserDefaults.standard.string(forKey: "ollamaSelectedModel") ?? "mistral"
+            return UserDefaults.standard.string(forKey: UserDefaults.Keys.ollamaSelectedModel) ?? "mistral"
         case .custom:
-            return UserDefaults.standard.string(forKey: "customProviderModel") ?? ""
+            return UserDefaults.standard.string(forKey: UserDefaults.Keys.customProviderModel) ?? ""
         case .openRouter:
             return "openai/gpt-oss-120b"
         }
@@ -155,19 +155,19 @@ enum AIProvider: String, CaseIterable {
 class AIService: ObservableObject {
     @Published var apiKey: String = ""
     @Published var isAPIKeyValid: Bool = false
-    @Published var customBaseURL: String = UserDefaults.standard.string(forKey: "customProviderBaseURL") ?? "" {
+    @Published var customBaseURL: String = UserDefaults.standard.string(forKey: UserDefaults.Keys.customProviderBaseURL) ?? "" {
         didSet {
-            userDefaults.set(customBaseURL, forKey: "customProviderBaseURL")
+            userDefaults.set(customBaseURL, forKey: UserDefaults.Keys.customProviderBaseURL)
         }
     }
-    @Published var customModel: String = UserDefaults.standard.string(forKey: "customProviderModel") ?? "" {
+    @Published var customModel: String = UserDefaults.standard.string(forKey: UserDefaults.Keys.customProviderModel) ?? "" {
         didSet {
-            userDefaults.set(customModel, forKey: "customProviderModel")
+            userDefaults.set(customModel, forKey: UserDefaults.Keys.customProviderModel)
         }
     }
     @Published var selectedProvider: AIProvider {
         didSet {
-            userDefaults.set(selectedProvider.rawValue, forKey: "selectedAIProvider")
+            userDefaults.set(selectedProvider.rawValue, forKey: UserDefaults.Keys.selectedAIProvider)
             if selectedProvider.requiresAPIKey {
                 if let savedKey = APIKeyManager.shared.getAPIKey(forProvider: selectedProvider.rawValue) {
                     self.apiKey = savedKey
@@ -227,11 +227,11 @@ class AIService: ObservableObject {
     }
     
     init() {
-        if userDefaults.string(forKey: "selectedAIProvider") == "GROQ" {
-            userDefaults.set("Groq", forKey: "selectedAIProvider")
+        if userDefaults.string(forKey: UserDefaults.Keys.selectedAIProvider) == "GROQ" {
+            userDefaults.set("Groq", forKey: UserDefaults.Keys.selectedAIProvider)
         }
 
-        if let savedProvider = userDefaults.string(forKey: "selectedAIProvider"),
+        if let savedProvider = userDefaults.string(forKey: UserDefaults.Keys.selectedAIProvider),
            let provider = AIProvider(rawValue: savedProvider) {
             self.selectedProvider = provider
         } else {
@@ -274,13 +274,13 @@ class AIService: ObservableObject {
     }
     
     private func loadSavedOpenRouterModels() {
-        if let savedModels = userDefaults.array(forKey: "openRouterModels") as? [String] {
+        if let savedModels = userDefaults.array(forKey: UserDefaults.Keys.openRouterModels) as? [String] {
             openRouterModels = savedModels
         }
     }
     
     private func saveOpenRouterModels() {
-        userDefaults.set(openRouterModels, forKey: "openRouterModels")
+        userDefaults.set(openRouterModels, forKey: UserDefaults.Keys.openRouterModels)
     }
     
     func selectModel(_ model: String) {
@@ -397,12 +397,12 @@ class AIService: ObservableObject {
     
     func updateOllamaBaseURL(_ newURL: String) {
         ollamaService.baseURL = newURL
-        userDefaults.set(newURL, forKey: "ollamaBaseURL")
+        userDefaults.set(newURL, forKey: UserDefaults.Keys.ollamaBaseURL)
     }
     
     func updateSelectedOllamaModel(_ modelName: String) {
         ollamaService.selectedModel = modelName
-        userDefaults.set(modelName, forKey: "ollamaSelectedModel")
+        userDefaults.set(modelName, forKey: UserDefaults.Keys.ollamaSelectedModel)
     }
     
     // MARK: - OpenRouter

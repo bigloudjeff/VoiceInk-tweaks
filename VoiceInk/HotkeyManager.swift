@@ -18,7 +18,7 @@ extension KeyboardShortcuts.Name {
 class HotkeyManager: ObservableObject {
     @Published var selectedHotkey1: HotkeyOption {
         didSet {
-            UserDefaults.standard.set(selectedHotkey1.rawValue, forKey: "selectedHotkey1")
+            UserDefaults.standard.set(selectedHotkey1.rawValue, forKey: UserDefaults.Keys.selectedHotkey1)
             if selectedHotkey1 != oldValue {
                 companionModifier1 = .none
             }
@@ -30,7 +30,7 @@ class HotkeyManager: ObservableObject {
             if selectedHotkey2 == .none {
                 KeyboardShortcuts.setShortcut(nil, for: .toggleMiniRecorder2)
             }
-            UserDefaults.standard.set(selectedHotkey2.rawValue, forKey: "selectedHotkey2")
+            UserDefaults.standard.set(selectedHotkey2.rawValue, forKey: UserDefaults.Keys.selectedHotkey2)
             if selectedHotkey2 != oldValue {
                 companionModifier2 = .none
             }
@@ -39,31 +39,31 @@ class HotkeyManager: ObservableObject {
     }
     @Published var companionModifier1: CompanionModifier {
         didSet {
-            UserDefaults.standard.set(companionModifier1.rawValue, forKey: "companionModifier1")
+            UserDefaults.standard.set(companionModifier1.rawValue, forKey: UserDefaults.Keys.companionModifier1)
             resetKeyStates()
         }
     }
     @Published var companionModifier2: CompanionModifier {
         didSet {
-            UserDefaults.standard.set(companionModifier2.rawValue, forKey: "companionModifier2")
+            UserDefaults.standard.set(companionModifier2.rawValue, forKey: UserDefaults.Keys.companionModifier2)
             resetKeyStates()
         }
     }
     @Published var recordingMode: RecordingMode {
         didSet {
-            UserDefaults.standard.set(recordingMode.rawValue, forKey: "recordingMode")
+            UserDefaults.standard.set(recordingMode.rawValue, forKey: UserDefaults.Keys.recordingMode)
             resetKeyStates()
         }
     }
     @Published var isMiddleClickToggleEnabled: Bool {
         didSet {
-            UserDefaults.standard.set(isMiddleClickToggleEnabled, forKey: "isMiddleClickToggleEnabled")
+            UserDefaults.standard.set(isMiddleClickToggleEnabled, forKey: UserDefaults.Keys.isMiddleClickToggleEnabled)
             setupHotkeyMonitoring()
         }
     }
     @Published var middleClickActivationDelay: Int {
         didSet {
-            UserDefaults.standard.set(middleClickActivationDelay, forKey: "middleClickActivationDelay")
+            UserDefaults.standard.set(middleClickActivationDelay, forKey: UserDefaults.Keys.middleClickActivationDelay)
         }
     }
     
@@ -203,14 +203,14 @@ class HotkeyManager: ObservableObject {
     }
     
     init(whisperState: WhisperState) {
-        self.selectedHotkey1 = HotkeyOption(rawValue: UserDefaults.standard.string(forKey: "selectedHotkey1") ?? "") ?? .rightCommand
-        self.selectedHotkey2 = HotkeyOption(rawValue: UserDefaults.standard.string(forKey: "selectedHotkey2") ?? "") ?? .none
-        self.companionModifier1 = CompanionModifier(rawValue: UserDefaults.standard.string(forKey: "companionModifier1") ?? "") ?? .none
-        self.companionModifier2 = CompanionModifier(rawValue: UserDefaults.standard.string(forKey: "companionModifier2") ?? "") ?? .none
-        self.recordingMode = RecordingMode(rawValue: UserDefaults.standard.string(forKey: "recordingMode") ?? "") ?? .hybrid
+        self.selectedHotkey1 = HotkeyOption(rawValue: UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedHotkey1) ?? "") ?? .rightCommand
+        self.selectedHotkey2 = HotkeyOption(rawValue: UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedHotkey2) ?? "") ?? .none
+        self.companionModifier1 = CompanionModifier(rawValue: UserDefaults.standard.string(forKey: UserDefaults.Keys.companionModifier1) ?? "") ?? .none
+        self.companionModifier2 = CompanionModifier(rawValue: UserDefaults.standard.string(forKey: UserDefaults.Keys.companionModifier2) ?? "") ?? .none
+        self.recordingMode = RecordingMode(rawValue: UserDefaults.standard.string(forKey: UserDefaults.Keys.recordingMode) ?? "") ?? .hybrid
 
-        self.isMiddleClickToggleEnabled = UserDefaults.standard.bool(forKey: "isMiddleClickToggleEnabled")
-        self.middleClickActivationDelay = UserDefaults.standard.integer(forKey: "middleClickActivationDelay")
+        self.isMiddleClickToggleEnabled = UserDefaults.standard.bool(forKey: UserDefaults.Keys.isMiddleClickToggleEnabled)
+        self.middleClickActivationDelay = UserDefaults.standard.integer(forKey: UserDefaults.Keys.middleClickActivationDelay)
         
         self.whisperState = whisperState
         self.miniRecorderShortcutManager = MiniRecorderShortcutManager(whisperState: whisperState)

@@ -29,7 +29,7 @@ class AIEnhancementService: ObservableObject {
 
     @Published var enhancementMode: EnhancementMode {
         didSet {
-            UserDefaults.standard.set(enhancementMode.rawValue, forKey: "enhancementMode")
+            UserDefaults.standard.set(enhancementMode.rawValue, forKey: UserDefaults.Keys.enhancementMode)
             if enhancementMode != .off && selectedPromptId == nil {
                 selectedPromptId = customPrompts.first?.id
             }
@@ -45,14 +45,14 @@ class AIEnhancementService: ObservableObject {
 
     @Published var backgroundEnhancementEnabled: Bool {
         didSet {
-            UserDefaults.standard.set(backgroundEnhancementEnabled, forKey: "backgroundEnhancementEnabled")
+            UserDefaults.standard.set(backgroundEnhancementEnabled, forKey: UserDefaults.Keys.backgroundEnhancementEnabled)
             NotificationCenter.default.post(name: .AppSettingsDidChange, object: nil)
         }
     }
 
     @Published var vocabularyExtractionEnabled: Bool {
         didSet {
-            UserDefaults.standard.set(vocabularyExtractionEnabled, forKey: "vocabularyExtractionEnabled")
+            UserDefaults.standard.set(vocabularyExtractionEnabled, forKey: UserDefaults.Keys.vocabularyExtractionEnabled)
             NotificationCenter.default.post(name: .AppSettingsDidChange, object: nil)
         }
     }
@@ -65,13 +65,13 @@ class AIEnhancementService: ObservableObject {
 
     @Published var useClipboardContext: Bool {
         didSet {
-            UserDefaults.standard.set(useClipboardContext, forKey: "useClipboardContext")
+            UserDefaults.standard.set(useClipboardContext, forKey: UserDefaults.Keys.useClipboardContext)
         }
     }
 
     @Published var useScreenCaptureContext: Bool {
         didSet {
-            UserDefaults.standard.set(useScreenCaptureContext, forKey: "useScreenCaptureContext")
+            UserDefaults.standard.set(useScreenCaptureContext, forKey: UserDefaults.Keys.useScreenCaptureContext)
             NotificationCenter.default.post(name: .AppSettingsDidChange, object: nil)
         }
     }
@@ -79,14 +79,14 @@ class AIEnhancementService: ObservableObject {
     @Published var customPrompts: [CustomPrompt] {
         didSet {
             if let encoded = try? JSONEncoder().encode(customPrompts) {
-                UserDefaults.standard.set(encoded, forKey: "customPrompts")
+                UserDefaults.standard.set(encoded, forKey: UserDefaults.Keys.customPrompts)
             }
         }
     }
 
     @Published var selectedPromptId: UUID? {
         didSet {
-            UserDefaults.standard.set(selectedPromptId?.uuidString, forKey: "selectedPromptId")
+            UserDefaults.standard.set(selectedPromptId?.uuidString, forKey: UserDefaults.Keys.selectedPromptId)
             NotificationCenter.default.post(name: .AppSettingsDidChange, object: nil)
             NotificationCenter.default.post(name: .promptSelectionChanged, object: nil)
         }
@@ -120,37 +120,37 @@ class AIEnhancementService: ObservableObject {
         self.customVocabularyService = CustomVocabularyService.shared
 
         // Migration: check new key first, fall back to old boolean key
-        if let modeString = UserDefaults.standard.string(forKey: "enhancementMode"),
+        if let modeString = UserDefaults.standard.string(forKey: UserDefaults.Keys.enhancementMode),
            let mode = EnhancementMode(rawValue: modeString) {
             // Migrate stored "background" mode to separate toggle
             if mode == .background {
                 self.enhancementMode = .off
                 self.backgroundEnhancementEnabled = true
-                UserDefaults.standard.set(EnhancementMode.off.rawValue, forKey: "enhancementMode")
-                UserDefaults.standard.set(true, forKey: "backgroundEnhancementEnabled")
+                UserDefaults.standard.set(EnhancementMode.off.rawValue, forKey: UserDefaults.Keys.enhancementMode)
+                UserDefaults.standard.set(true, forKey: UserDefaults.Keys.backgroundEnhancementEnabled)
             } else {
                 self.enhancementMode = mode
-                self.backgroundEnhancementEnabled = UserDefaults.standard.bool(forKey: "backgroundEnhancementEnabled")
+                self.backgroundEnhancementEnabled = UserDefaults.standard.bool(forKey: UserDefaults.Keys.backgroundEnhancementEnabled)
             }
         } else if UserDefaults.standard.bool(forKey: "isAIEnhancementEnabled") {
             self.enhancementMode = .on
-            self.backgroundEnhancementEnabled = UserDefaults.standard.bool(forKey: "backgroundEnhancementEnabled")
+            self.backgroundEnhancementEnabled = UserDefaults.standard.bool(forKey: UserDefaults.Keys.backgroundEnhancementEnabled)
         } else {
             self.enhancementMode = .off
-            self.backgroundEnhancementEnabled = UserDefaults.standard.bool(forKey: "backgroundEnhancementEnabled")
+            self.backgroundEnhancementEnabled = UserDefaults.standard.bool(forKey: UserDefaults.Keys.backgroundEnhancementEnabled)
         }
-        self.vocabularyExtractionEnabled = UserDefaults.standard.bool(forKey: "vocabularyExtractionEnabled")
-        self.useClipboardContext = UserDefaults.standard.bool(forKey: "useClipboardContext")
-        self.useScreenCaptureContext = UserDefaults.standard.bool(forKey: "useScreenCaptureContext")
+        self.vocabularyExtractionEnabled = UserDefaults.standard.bool(forKey: UserDefaults.Keys.vocabularyExtractionEnabled)
+        self.useClipboardContext = UserDefaults.standard.bool(forKey: UserDefaults.Keys.useClipboardContext)
+        self.useScreenCaptureContext = UserDefaults.standard.bool(forKey: UserDefaults.Keys.useScreenCaptureContext)
 
-        if let savedPromptsData = UserDefaults.standard.data(forKey: "customPrompts"),
+        if let savedPromptsData = UserDefaults.standard.data(forKey: UserDefaults.Keys.customPrompts),
            let decodedPrompts = try? JSONDecoder().decode([CustomPrompt].self, from: savedPromptsData) {
             self.customPrompts = decodedPrompts
         } else {
             self.customPrompts = []
         }
 
-        if let savedPromptId = UserDefaults.standard.string(forKey: "selectedPromptId") {
+        if let savedPromptId = UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedPromptId) {
             self.selectedPromptId = UUID(uuidString: savedPromptId)
         }
 
@@ -253,7 +253,9 @@ class AIEnhancementService: ObservableObject {
                 return activePrompt.finalPromptText + finalContextSection
             }
         } else {
-            let defaultPrompt = allPrompts.first(where: { $0.id == PredefinedPrompts.defaultPromptId }) ?? allPrompts.first!
+            guard let defaultPrompt = allPrompts.first(where: { $0.id == PredefinedPrompts.defaultPromptId }) ?? allPrompts.first else {
+                return finalContextSection
+            }
             return defaultPrompt.finalPromptText + finalContextSection
         }
     }

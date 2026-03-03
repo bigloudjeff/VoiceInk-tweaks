@@ -12,9 +12,9 @@ class PlaybackController: ObservableObject {
     private var originalMediaAppBundleId: String?
     private var resumeTask: Task<Void, Never>?
 
-    @Published var isPauseMediaEnabled: Bool = UserDefaults.standard.bool(forKey: "isPauseMediaEnabled") {
+    @Published var isPauseMediaEnabled: Bool = UserDefaults.standard.bool(forKey: UserDefaults.Keys.isPauseMediaEnabled) {
         didSet {
-            UserDefaults.standard.set(isPauseMediaEnabled, forKey: "isPauseMediaEnabled")
+            UserDefaults.standard.set(isPauseMediaEnabled, forKey: UserDefaults.Keys.isPauseMediaEnabled)
 
             if isPauseMediaEnabled {
                 startMediaTracking()

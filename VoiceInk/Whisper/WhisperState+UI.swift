@@ -168,7 +168,7 @@ extension WhisperState {
  
  private func updateContextPrompt() async {
  // Always reload the prompt from UserDefaults to ensure we have the latest
- let basePrompt = UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? whisperPrompt.transcriptionPrompt
+ let basePrompt = UserDefaults.standard.string(forKey: UserDefaults.Keys.transcriptionPrompt) ?? whisperPrompt.transcriptionPrompt
 
  // Append bare vocabulary words to bias transcription toward recognizing them
  let vocabularyString = CustomVocabularyService.shared.getTranscriptionVocabulary(from: modelContext)

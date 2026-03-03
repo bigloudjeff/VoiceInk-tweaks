@@ -27,9 +27,10 @@ struct WordReplacementView: View {
     @State private var originalWord = ""
     @State private var replacementWord = ""
     @State private var showInfoPopover = false
+    @State private var pendingDeleteReplacement: WordReplacement?
 
     init() {
-        if let savedSort = UserDefaults.standard.string(forKey: "wordReplacementSortMode"),
+        if let savedSort = UserDefaults.standard.string(forKey: UserDefaults.Keys.wordReplacementSortMode),
            let mode = SortMode(rawValue: savedSort) {
             _sortMode = State(initialValue: mode)
         }
@@ -55,7 +56,7 @@ struct WordReplacementView: View {
         case .replacement:
             sortMode = (sortMode == .replacementAsc) ? .replacementDesc : .replacementAsc
         }
-        UserDefaults.standard.set(sortMode.rawValue, forKey: "wordReplacementSortMode")
+        UserDefaults.standard.set(sortMode.rawValue, forKey: UserDefaults.Keys.wordReplacementSortMode)
     }
 
     private var shouldShowAddButton: Bool {
@@ -169,7 +170,7 @@ struct WordReplacementView: View {
                                 ReplacementRow(
                                     original: replacement.originalText,
                                     replacement: replacement.replacementText,
-                                    onDelete: { removeReplacement(replacement) },
+                                    onDelete: { pendingDeleteReplacement = replacement },
                                     onEdit: { editingReplacement = replacement }
                                 )
 
@@ -192,6 +193,25 @@ struct WordReplacementView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(alertMessage)
+        }
+        .confirmationDialog(
+            "Delete Replacement",
+            isPresented: Binding(
+                get: { pendingDeleteReplacement != nil },
+                set: { if !$0 { pendingDeleteReplacement = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                if let replacement = pendingDeleteReplacement {
+                    removeReplacement(replacement)
+                    pendingDeleteReplacement = nil
+                }
+            }
+        } message: {
+            if let replacement = pendingDeleteReplacement {
+                Text("Remove the replacement \"\(replacement.originalText)\"?")
+            }
         }
     }
 

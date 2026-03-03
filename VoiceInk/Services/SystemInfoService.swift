@@ -43,22 +43,22 @@ class SystemInfoService {
         AI Model: \(getAIModel())
 
         UI SETTINGS:
-        Menu Bar Only: \(UserDefaults.standard.bool(forKey: "IsMenuBarOnly"))
+        Menu Bar Only: \(UserDefaults.standard.bool(forKey: UserDefaults.Keys.isMenuBarOnly))
 
         CLIPBOARD & PASTE SETTINGS:
-        Restore Clipboard After Paste: \(UserDefaults.standard.bool(forKey: "restoreClipboardAfterPaste"))
-        Clipboard Restore Delay: \(UserDefaults.standard.double(forKey: "clipboardRestoreDelay"))s
-        Use AppleScript Paste: \(UserDefaults.standard.bool(forKey: "useAppleScriptPaste"))
+        Restore Clipboard After Paste: \(UserDefaults.standard.bool(forKey: UserDefaults.Keys.restoreClipboardAfterPaste))
+        Clipboard Restore Delay: \(UserDefaults.standard.double(forKey: UserDefaults.Keys.clipboardRestoreDelay))s
+        Use AppleScript Paste: \(UserDefaults.standard.bool(forKey: UserDefaults.Keys.useAppleScriptPaste))
 
         POWER MODE:
-        Power Mode Enabled: \(UserDefaults.standard.bool(forKey: "powerModeUIFlag"))
+        Power Mode Enabled: \(UserDefaults.standard.bool(forKey: UserDefaults.Keys.powerModeUIFlag))
         Auto-Restore Enabled: \(UserDefaults.standard.bool(forKey: "powerModeAutoRestoreEnabled"))
 
         DATA CLEANUP SETTINGS:
-        Auto-Delete Transcriptions: \(UserDefaults.standard.bool(forKey: "IsTranscriptionCleanupEnabled"))
+        Auto-Delete Transcriptions: \(UserDefaults.standard.bool(forKey: UserDefaults.Keys.isTranscriptionCleanupEnabled))
         Transcription Retention: \(UserDefaults.standard.integer(forKey: "TranscriptionRetentionMinutes")) minutes
-        Auto-Delete Audio Files: \(UserDefaults.standard.bool(forKey: "IsAudioCleanupEnabled"))
-        Audio Retention Period: \(UserDefaults.standard.integer(forKey: "AudioRetentionPeriod")) days
+        Auto-Delete Audio Files: \(UserDefaults.standard.bool(forKey: UserDefaults.Keys.isAudioCleanupEnabled))
+        Audio Retention Period: \(UserDefaults.standard.integer(forKey: UserDefaults.Keys.audioRetentionPeriod)) days
 
         PERMISSIONS:
         Accessibility: \(getAccessibilityStatus())
@@ -135,7 +135,7 @@ class SystemInfoService {
     }
 
     private func getPrimaryHotkey() -> String {
-        if let hotkeyRaw = UserDefaults.standard.string(forKey: "selectedHotkey1"),
+        if let hotkeyRaw = UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedHotkey1),
            let hotkey = HotkeyManager.HotkeyOption(rawValue: hotkeyRaw) {
             return hotkey.displayName
         }
@@ -143,7 +143,7 @@ class SystemInfoService {
     }
 
     private func getSecondaryHotkey() -> String {
-        if let hotkeyRaw = UserDefaults.standard.string(forKey: "selectedHotkey2"),
+        if let hotkeyRaw = UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedHotkey2),
            let hotkey = HotkeyManager.HotkeyOption(rawValue: hotkeyRaw) {
             return hotkey.displayName
         }
@@ -151,7 +151,7 @@ class SystemInfoService {
     }
 
     private func getCurrentTranscriptionModel() -> String {
-        if let modelName = UserDefaults.standard.string(forKey: "CurrentTranscriptionModel") {
+        if let modelName = UserDefaults.standard.string(forKey: UserDefaults.Keys.currentTranscriptionModel) {
             if let model = PredefinedModels.models.first(where: { $0.name == modelName }) {
                 return model.displayName
             }
@@ -161,21 +161,21 @@ class SystemInfoService {
     }
 
     private func getAIEnhancementStatus() -> String {
-        if let mode = UserDefaults.standard.string(forKey: "enhancementMode") {
+        if let mode = UserDefaults.standard.string(forKey: UserDefaults.Keys.enhancementMode) {
             return mode.capitalized
         }
         return "Off"
     }
 
     private func getAIProvider() -> String {
-        if let providerRaw = UserDefaults.standard.string(forKey: "selectedAIProvider") {
+        if let providerRaw = UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedAIProvider) {
             return providerRaw
         }
         return "None selected"
     }
 
     private func getAIModel() -> String {
-        if let providerRaw = UserDefaults.standard.string(forKey: "selectedAIProvider") {
+        if let providerRaw = UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedAIProvider) {
             let modelKey = "\(providerRaw)SelectedModel"
             if let savedModel = UserDefaults.standard.string(forKey: modelKey), !savedModel.isEmpty {
                 return savedModel
@@ -212,7 +212,7 @@ class SystemInfoService {
 
         // Check for existing license key and activation
         if licenseManager.licenseKey != nil {
-            if licenseManager.activationId != nil || !UserDefaults.standard.bool(forKey: "VoiceInkLicenseRequiresActivation") {
+            if licenseManager.activationId != nil || !UserDefaults.standard.bool(forKey: UserDefaults.Keys.licenseRequiresActivation) {
                 return "Licensed (Pro)"
             }
         }
@@ -221,7 +221,7 @@ class SystemInfoService {
     }
 
     private func getCurrentLanguage() -> String {
-        return UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "en"
+        return UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage) ?? "en"
     }
 
 }

@@ -2,10 +2,10 @@ import SwiftUI
 
 struct ModelSettingsView: View {
     @ObservedObject var whisperPrompt: WhisperPrompt
-    @AppStorage("SelectedLanguage") private var selectedLanguage: String = "en"
-    @AppStorage("IsTextFormattingEnabled") private var isTextFormattingEnabled = true
-    @AppStorage("IsVADEnabled") private var isVADEnabled = true
-    @AppStorage("AppendTrailingSpace") private var appendTrailingSpace = true
+    @AppStorage(UserDefaults.Keys.selectedLanguage) private var selectedLanguage: String = "en"
+    @AppStorage(UserDefaults.Keys.isTextFormattingEnabled) private var isTextFormattingEnabled = true
+    @AppStorage(UserDefaults.Keys.isVADEnabled) private var isVADEnabled = true
+    @AppStorage(UserDefaults.Keys.appendTrailingSpace) private var appendTrailingSpace = true
     @AppStorage("PrewarmModelOnWake") private var prewarmModelOnWake = true
     @State private var customPrompt: String = ""
     @State private var isEditing: Bool = false

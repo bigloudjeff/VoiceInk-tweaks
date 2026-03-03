@@ -142,6 +142,10 @@ class AudioProcessor {
         return samples
     }
     func saveSamplesAsWav(samples: [Float], to url: URL) throws {
+        guard !samples.isEmpty else {
+            throw AudioProcessingError.conversionFailed
+        }
+
         let outputFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
             sampleRate: AudioFormat.targetSampleRate,
@@ -157,18 +161,18 @@ class AudioProcessor {
             pcmFormat: outputFormat,
             frameCapacity: AVAudioFrameCount(samples.count)
         )
-        
-        guard let buffer = buffer else {
+
+        guard let buffer = buffer, let channelData = buffer.int16ChannelData else {
             throw AudioProcessingError.conversionFailed
         }
-        
+
         // Convert float samples to int16
         let int16Samples = samples.map { max(-1.0, min(1.0, $0)) * Float(Int16.max) }.map { Int16($0) }
 
         // Copy samples to buffer
         int16Samples.withUnsafeBufferPointer { int16Buffer in
-            let int16Pointer = int16Buffer.baseAddress!
-            buffer.int16ChannelData![0].update(from: int16Pointer, count: int16Samples.count)
+            guard let baseAddress = int16Buffer.baseAddress else { return }
+            channelData[0].update(from: baseAddress, count: int16Samples.count)
         }
         buffer.frameLength = AVAudioFrameCount(samples.count)
 

@@ -1,20 +1,22 @@
 import Foundation
 import SwiftUI
 import LLMkit
+import os
 
 class OllamaService: ObservableObject {
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "OllamaService")
     static let defaultBaseURL = "http://localhost:11434"
 
     // MARK: - Published Properties
     @Published var baseURL: String {
         didSet {
-            UserDefaults.standard.set(baseURL, forKey: "ollamaBaseURL")
+            UserDefaults.standard.set(baseURL, forKey: UserDefaults.Keys.ollamaBaseURL)
         }
     }
 
     @Published var selectedModel: String {
         didSet {
-            UserDefaults.standard.set(selectedModel, forKey: "ollamaSelectedModel")
+            UserDefaults.standard.set(selectedModel, forKey: UserDefaults.Keys.ollamaSelectedModel)
         }
     }
 
@@ -25,8 +27,8 @@ class OllamaService: ObservableObject {
     private let defaultTemperature: Double = 0.3
 
     init() {
-        self.baseURL = UserDefaults.standard.string(forKey: "ollamaBaseURL") ?? Self.defaultBaseURL
-        self.selectedModel = UserDefaults.standard.string(forKey: "ollamaSelectedModel") ?? "llama2"
+        self.baseURL = UserDefaults.standard.string(forKey: UserDefaults.Keys.ollamaBaseURL) ?? Self.defaultBaseURL
+        self.selectedModel = UserDefaults.standard.string(forKey: UserDefaults.Keys.ollamaSelectedModel) ?? "llama2"
     }
 
     private var baseURLValue: URL? {
@@ -48,7 +50,7 @@ class OllamaService: ObservableObject {
         defer { isLoadingModels = false }
 
         guard let url = baseURLValue else {
-            print("Invalid Ollama base URL")
+            logger.error("Invalid Ollama base URL")
             availableModels = []
             return
         }
@@ -61,7 +63,7 @@ class OllamaService: ObservableObject {
                 selectedModel = models[0].name
             }
         } catch {
-            print("Error fetching models: \(error)")
+            logger.error("Error fetching models: \(error.localizedDescription, privacy: .public)")
             availableModels = []
         }
     }

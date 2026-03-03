@@ -78,7 +78,7 @@ class StreamingTranscriptionService {
         let provider = createProvider(for: model)
         self.provider = provider
 
-        let selectedLanguage = UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto"
+        let selectedLanguage = UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage) ?? "auto"
 
         try await provider.connect(model: model, language: selectedLanguage)
 

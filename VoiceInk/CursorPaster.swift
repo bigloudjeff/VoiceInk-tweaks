@@ -9,22 +9,22 @@ class CursorPaster {
 
     // MARK: - Cached preferences
 
-    private static var shouldRestoreClipboard = UserDefaults.standard.bool(forKey: "restoreClipboardAfterPaste")
-    private static var shouldUseAppleScript = UserDefaults.standard.bool(forKey: "useAppleScriptPaste")
-    private static var restoreDelay = UserDefaults.standard.double(forKey: "clipboardRestoreDelay")
-    static var appendTrailingSpace = UserDefaults.standard.bool(forKey: "AppendTrailingSpace")
-    private static var pasteMethod = UserDefaults.standard.string(forKey: "pasteMethod") ?? "default"
+    private static var shouldRestoreClipboard = UserDefaults.standard.bool(forKey: UserDefaults.Keys.restoreClipboardAfterPaste)
+    private static var shouldUseAppleScript = UserDefaults.standard.bool(forKey: UserDefaults.Keys.useAppleScriptPaste)
+    private static var restoreDelay = UserDefaults.standard.double(forKey: UserDefaults.Keys.clipboardRestoreDelay)
+    static var appendTrailingSpace = UserDefaults.standard.bool(forKey: UserDefaults.Keys.appendTrailingSpace)
+    private static var pasteMethod = UserDefaults.standard.string(forKey: UserDefaults.Keys.pasteMethod) ?? "default"
 
     private static let prefsObserver: NSObjectProtocol = {
         NotificationCenter.default.addObserver(
             forName: UserDefaults.didChangeNotification,
             object: nil, queue: .main
         ) { _ in
-            shouldRestoreClipboard = UserDefaults.standard.bool(forKey: "restoreClipboardAfterPaste")
-            shouldUseAppleScript = UserDefaults.standard.bool(forKey: "useAppleScriptPaste")
-            restoreDelay = UserDefaults.standard.double(forKey: "clipboardRestoreDelay")
-            appendTrailingSpace = UserDefaults.standard.bool(forKey: "AppendTrailingSpace")
-            pasteMethod = UserDefaults.standard.string(forKey: "pasteMethod") ?? "default"
+            shouldRestoreClipboard = UserDefaults.standard.bool(forKey: UserDefaults.Keys.restoreClipboardAfterPaste)
+            shouldUseAppleScript = UserDefaults.standard.bool(forKey: UserDefaults.Keys.useAppleScriptPaste)
+            restoreDelay = UserDefaults.standard.double(forKey: UserDefaults.Keys.clipboardRestoreDelay)
+            appendTrailingSpace = UserDefaults.standard.bool(forKey: UserDefaults.Keys.appendTrailingSpace)
+            pasteMethod = UserDefaults.standard.string(forKey: UserDefaults.Keys.pasteMethod) ?? "default"
         }
     }()
 

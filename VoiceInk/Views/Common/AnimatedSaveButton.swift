@@ -1,7 +1,9 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import os
 
 struct AnimatedSaveButton: View {
+    private static let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "AnimatedSaveButton")
     let textToSave: String
     @State private var isSaved: Bool = false
     @State private var showingSavePanel = false
@@ -61,7 +63,7 @@ struct AnimatedSaveButton: View {
                     }
                 }
             } catch {
-                print("Failed to save file: \(error.localizedDescription)")
+                Self.logger.error("Failed to save file: \(error.localizedDescription, privacy: .public)")
             }
         }
     }

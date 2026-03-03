@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 
+@MainActor
 class MiniWindowManager: ObservableObject {
     @Published var isVisible = false
     private var windowController: NSWindowController?
@@ -11,24 +12,6 @@ class MiniWindowManager: ObservableObject {
     init(whisperState: WhisperState, recorder: Recorder) {
         self.whisperState = whisperState
         self.recorder = recorder
-        setupNotifications()
-    }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
-    
-    private func setupNotifications() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleHideNotification),
-            name: NSNotification.Name("HideMiniRecorder"),
-            object: nil
-        )
-    }
-    
-    @objc private func handleHideNotification() {
-        hide()
     }
     func show(on screen: NSScreen? = nil) {
         if isVisible { return }
@@ -51,9 +34,11 @@ class MiniWindowManager: ObservableObject {
         let metrics = MiniRecorderPanel.calculateWindowMetrics(for: screen)
         let panel = MiniRecorderPanel(contentRect: metrics)
 
+        guard let enhancementService = whisperState.enhancementService else { return }
+
         let miniRecorderView = MiniRecorderView(whisperState: whisperState, recorder: recorder)
             .environmentObject(self)
-            .environmentObject(whisperState.enhancementService!)
+            .environmentObject(enhancementService)
 
         let hostingController = NSHostingController(rootView: miniRecorderView)
         panel.contentView = hostingController.view

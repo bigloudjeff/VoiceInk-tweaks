@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 import KeyboardShortcuts
 import LaunchAtLogin
 import SwiftData
+import os
 
 struct GeneralSettings: Codable {
     let toggleMiniRecorderShortcut: KeyboardShortcuts.Shortcut?
@@ -69,21 +70,22 @@ struct VoiceInkExportedSettings: Codable {
 
 class ImportExportService {
     static let shared = ImportExportService()
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "ImportExportService")
     private let currentSettingsVersion: String
     private let dictionaryItemsKey = "CustomVocabularyItems"
     private let wordReplacementsKey = "wordReplacements"
 
 
-    private let keyIsMenuBarOnly = "IsMenuBarOnly"
-    private let keyRecorderType = "RecorderType"
-    private let keyIsAudioCleanupEnabled = "IsAudioCleanupEnabled"
-    private let keyIsTranscriptionCleanupEnabled = "IsTranscriptionCleanupEnabled"
+    private let keyIsMenuBarOnly = UserDefaults.Keys.isMenuBarOnly
+    private let keyRecorderType = UserDefaults.Keys.recorderType
+    private let keyIsAudioCleanupEnabled = UserDefaults.Keys.isAudioCleanupEnabled
+    private let keyIsTranscriptionCleanupEnabled = UserDefaults.Keys.isTranscriptionCleanupEnabled
     private let keyTranscriptionRetentionMinutes = "TranscriptionRetentionMinutes"
-    private let keyAudioRetentionPeriod = "AudioRetentionPeriod"
+    private let keyAudioRetentionPeriod = UserDefaults.Keys.audioRetentionPeriod
 
     private let keyIsSoundFeedbackEnabled = "isSoundFeedbackEnabled"
-    private let keyIsSystemMuteEnabled = "isSystemMuteEnabled"
-    private let keyIsTextFormattingEnabled = "IsTextFormattingEnabled"
+    private let keyIsSystemMuteEnabled = UserDefaults.Keys.isSystemMuteEnabled
+    private let keyIsTextFormattingEnabled = UserDefaults.Keys.isTextFormattingEnabled
 
     private init() {
         if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
@@ -167,10 +169,10 @@ class ImportExportService {
             isPauseMediaEnabled: playbackController.isPauseMediaEnabled,
             audioResumptionDelay: mediaController.audioResumptionDelay,
             isTextFormattingEnabled: UserDefaults.standard.bool(forKey: keyIsTextFormattingEnabled),
-            isExperimentalFeaturesEnabled: UserDefaults.standard.bool(forKey: "isExperimentalFeaturesEnabled"),
-            restoreClipboardAfterPaste: UserDefaults.standard.bool(forKey: "restoreClipboardAfterPaste"),
-            clipboardRestoreDelay: UserDefaults.standard.double(forKey: "clipboardRestoreDelay"),
-            useAppleScriptPaste: UserDefaults.standard.bool(forKey: "useAppleScriptPaste")
+            isExperimentalFeaturesEnabled: UserDefaults.standard.bool(forKey: UserDefaults.Keys.isExperimentalFeaturesEnabled),
+            restoreClipboardAfterPaste: UserDefaults.standard.bool(forKey: UserDefaults.Keys.restoreClipboardAfterPaste),
+            clipboardRestoreDelay: UserDefaults.standard.double(forKey: UserDefaults.Keys.clipboardRestoreDelay),
+            useAppleScriptPaste: UserDefaults.standard.bool(forKey: UserDefaults.Keys.useAppleScriptPaste)
         )
 
         let exportedSettings = VoiceInkExportedSettings(
@@ -269,9 +271,9 @@ class ImportExportService {
                         customModelManager.customModels = modelsToImport
                         customModelManager.saveCustomModels() // Ensure they are persisted
                         whisperState.refreshAllAvailableModels() // Refresh the UI
-                        print("Successfully imported \(modelsToImport.count) custom models.")
+                        self.logger.notice("Successfully imported \(modelsToImport.count, privacy: .public) custom models.")
                     } else {
-                        print("No custom models found in the imported file.")
+                        self.logger.notice("No custom models found in the imported file.")
                     }
 
                     if let customEmojis = importedSettings.customEmojis {
@@ -293,10 +295,14 @@ class ImportExportService {
                                 whisperState.modelContext.insert(newWord)
                             }
                         }
-                        try? whisperState.modelContext.save()
-                        print("Successfully imported vocabulary words to SwiftData.")
+                        do {
+                            try whisperState.modelContext.save()
+                            self.logger.notice("Successfully imported vocabulary words.")
+                        } catch {
+                            self.logger.error("Failed to save imported vocabulary words: \(error.localizedDescription, privacy: .public)")
+                        }
                     } else {
-                        print("No vocabulary words found in the imported file. Existing items remain unchanged.")
+                        self.logger.notice("No vocabulary words found in the imported file. Existing items remain unchanged.")
                     }
 
                     // Import word replacements to SwiftData
@@ -330,10 +336,14 @@ class ImportExportService {
                                 existingKeysSet.formUnion(importTokens)
                             }
                         }
-                        try? whisperState.modelContext.save()
-                        print("Successfully imported word replacements to SwiftData.")
+                        do {
+                            try whisperState.modelContext.save()
+                            self.logger.notice("Successfully imported word replacements.")
+                        } catch {
+                            self.logger.error("Failed to save imported word replacements: \(error.localizedDescription, privacy: .public)")
+                        }
                     } else {
-                        print("No word replacements found in the imported file. Existing replacements remain unchanged.")
+                        self.logger.notice("No word replacements found in the imported file. Existing replacements remain unchanged.")
                     }
 
                     // Import transcription history
@@ -364,8 +374,12 @@ class ImportExportService {
                             whisperState.modelContext.insert(transcription)
                             importedCount += 1
                         }
-                        try? whisperState.modelContext.save()
-                        print("Successfully imported \(importedCount) transcriptions (skipped \(transcriptionsToImport.count - importedCount) duplicates).")
+                        do {
+                            try whisperState.modelContext.save()
+                            self.logger.notice("Successfully imported \(importedCount) transcriptions (skipped \(transcriptionsToImport.count - importedCount) duplicates).")
+                        } catch {
+                            self.logger.error("Failed to save imported transcriptions: \(error.localizedDescription, privacy: .public)")
+                        }
                     }
 
                     if let general = importedSettings.generalSettings {
@@ -434,7 +448,7 @@ class ImportExportService {
                             mediaController.audioResumptionDelay = audioDelay
                         }
                         if let experimentalEnabled = general.isExperimentalFeaturesEnabled {
-                            UserDefaults.standard.set(experimentalEnabled, forKey: "isExperimentalFeaturesEnabled")
+                            UserDefaults.standard.set(experimentalEnabled, forKey: UserDefaults.Keys.isExperimentalFeaturesEnabled)
                             if experimentalEnabled == false {
                                 playbackController.isPauseMediaEnabled = false
                             }
@@ -443,13 +457,13 @@ class ImportExportService {
                             UserDefaults.standard.set(textFormattingEnabled, forKey: self.keyIsTextFormattingEnabled)
                         }
                         if let restoreClipboard = general.restoreClipboardAfterPaste {
-                            UserDefaults.standard.set(restoreClipboard, forKey: "restoreClipboardAfterPaste")
+                            UserDefaults.standard.set(restoreClipboard, forKey: UserDefaults.Keys.restoreClipboardAfterPaste)
                         }
                         if let clipboardDelay = general.clipboardRestoreDelay {
-                            UserDefaults.standard.set(clipboardDelay, forKey: "clipboardRestoreDelay")
+                            UserDefaults.standard.set(clipboardDelay, forKey: UserDefaults.Keys.clipboardRestoreDelay)
                         }
                         if let appleScriptPaste = general.useAppleScriptPaste {
-                            UserDefaults.standard.set(appleScriptPaste, forKey: "useAppleScriptPaste")
+                            UserDefaults.standard.set(appleScriptPaste, forKey: UserDefaults.Keys.useAppleScriptPaste)
                         }
                     }
 

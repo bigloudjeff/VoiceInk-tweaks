@@ -3,7 +3,7 @@ import Foundation
 
 @MainActor
 class WhisperPrompt: ObservableObject {
-    @Published var transcriptionPrompt: String = UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? ""
+    @Published var transcriptionPrompt: String = UserDefaults.standard.string(forKey: UserDefaults.Keys.transcriptionPrompt) ?? ""
     
     private let customPromptsKey = "CustomLanguagePrompts"
     
@@ -86,14 +86,14 @@ class WhisperPrompt: ObservableObject {
     
     func updateTranscriptionPrompt() {
         // Get the currently selected language from UserDefaults
-        let selectedLanguage = UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "en"
+        let selectedLanguage = UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage) ?? "en"
         
         // Get the prompt for the selected language (custom if available, otherwise default)
         let basePrompt = getLanguagePrompt(for: selectedLanguage)
         let prompt = basePrompt.isEmpty ? "" : basePrompt
         
         transcriptionPrompt = prompt
-        UserDefaults.standard.set(prompt, forKey: "TranscriptionPrompt")
+        UserDefaults.standard.set(prompt, forKey: UserDefaults.Keys.transcriptionPrompt)
         UserDefaults.standard.synchronize() // Force immediate synchronization
         
         // Notify that the prompt has changed

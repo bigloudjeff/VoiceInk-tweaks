@@ -172,7 +172,7 @@ class SetLanguageCommand: NSScriptCommand {
    return "Error: language code parameter required"
   }
   let trimmed = code.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-  UserDefaults.standard.set(trimmed, forKey: "SelectedLanguage")
+  UserDefaults.standard.set(trimmed, forKey: UserDefaults.Keys.selectedLanguage)
   NotificationCenter.default.post(name: .languageDidChange, object: nil)
   return trimmed
  }

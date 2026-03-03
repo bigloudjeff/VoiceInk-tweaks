@@ -2,8 +2,10 @@
 import Foundation
 import AppKit
 import SwiftData
+import os
 
 class VoiceInkCSVExportService {
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "VoiceInkCSVExportService")
     
     func exportTranscriptionsToCSV(transcriptions: [Transcription]) {
         let csvString = generateCSV(for: transcriptions)
@@ -17,7 +19,7 @@ class VoiceInkCSVExportService {
                 do {
                     try csvString.write(to: url, atomically: true, encoding: .utf8)
                 } catch {
-                    print("Error writing CSV file: \(error)")
+                    self.logger.error("Error writing CSV file: \(error.localizedDescription, privacy: .public)")
                 }
             }
         }

@@ -38,10 +38,10 @@ struct PowerModeConfig: Codable, Identifiable, Equatable {
         self.selectedPrompt = selectedPrompt
         self.useScreenCapture = useScreenCapture
         self.isAutoSendEnabled = isAutoSendEnabled
-        self.selectedAIProvider = selectedAIProvider ?? UserDefaults.standard.string(forKey: "selectedAIProvider")
+        self.selectedAIProvider = selectedAIProvider ?? UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedAIProvider)
         self.selectedAIModel = selectedAIModel
-        self.selectedTranscriptionModelName = selectedTranscriptionModelName ?? UserDefaults.standard.string(forKey: "CurrentTranscriptionModel")
-        self.selectedLanguage = selectedLanguage ?? UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "en"
+        self.selectedTranscriptionModelName = selectedTranscriptionModelName ?? UserDefaults.standard.string(forKey: UserDefaults.Keys.currentTranscriptionModel)
+        self.selectedLanguage = selectedLanguage ?? UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage) ?? "en"
         self.isEnabled = isEnabled
         self.isDefault = isDefault
         self.hotkeyShortcut = hotkeyShortcut
@@ -160,7 +160,7 @@ class PowerModeManager: ObservableObject {
         if let data = try? JSONEncoder().encode(configurations) {
             UserDefaults.standard.set(data, forKey: configKey)
         }
-        NotificationCenter.default.post(name: NSNotification.Name("PowerModeConfigurationsDidChange"), object: nil)
+        NotificationCenter.default.post(name: .powerModeConfigurationsDidChange, object: nil)
     }
 
     func addConfiguration(_ config: PowerModeConfig) {

@@ -44,7 +44,7 @@ class LicenseViewModel: ObservableObject {
 
             // If we have a license key, trust that it's licensed
             // Skip server validation on startup
-            if licenseManager.activationId != nil || !userDefaults.bool(forKey: "VoiceInkLicenseRequiresActivation") {
+            if licenseManager.activationId != nil || !userDefaults.bool(forKey: UserDefaults.Keys.licenseRequiresActivation) {
                 licenseState = .licensed
                 activationsLimit = userDefaults.activationsLimit
                 return
@@ -52,10 +52,10 @@ class LicenseViewModel: ObservableObject {
         }
 
         // Check if this is first launch
-        let hasLaunchedBefore = userDefaults.bool(forKey: "VoiceInkHasLaunchedBefore")
+        let hasLaunchedBefore = userDefaults.bool(forKey: UserDefaults.Keys.hasLaunchedBefore)
         if !hasLaunchedBefore {
             // First launch - start trial automatically
-            userDefaults.set(true, forKey: "VoiceInkHasLaunchedBefore")
+            userDefaults.set(true, forKey: UserDefaults.Keys.hasLaunchedBefore)
             startTrial()
             return
         }
@@ -131,14 +131,14 @@ class LicenseViewModel: ObservableObject {
 
                 // Store activation details
                 licenseManager.activationId = newActivationId
-                userDefaults.set(true, forKey: "VoiceInkLicenseRequiresActivation")
+                userDefaults.set(true, forKey: UserDefaults.Keys.licenseRequiresActivation)
                 self.activationsLimit = limit
                 userDefaults.activationsLimit = limit
 
             } else {
                 // This license doesn't require activation (unlimited devices)
                 licenseManager.activationId = nil
-                userDefaults.set(false, forKey: "VoiceInkLicenseRequiresActivation")
+                userDefaults.set(false, forKey: UserDefaults.Keys.licenseRequiresActivation)
                 self.activationsLimit = licenseCheck.activationsLimit ?? 0
                 userDefaults.activationsLimit = licenseCheck.activationsLimit ?? 0
 
@@ -161,7 +161,7 @@ class LicenseViewModel: ObservableObject {
             // This is actually a success case for unlimited licenses
             licenseManager.licenseKey = licenseKey
             licenseManager.activationId = nil
-            userDefaults.set(false, forKey: "VoiceInkLicenseRequiresActivation")
+            userDefaults.set(false, forKey: UserDefaults.Keys.licenseRequiresActivation)
             self.activationsLimit = 0
             userDefaults.activationsLimit = 0
 
@@ -180,8 +180,8 @@ class LicenseViewModel: ObservableObject {
         licenseManager.removeAll()
 
         // Reset UserDefaults flags
-        userDefaults.set(false, forKey: "VoiceInkLicenseRequiresActivation")
-        userDefaults.set(false, forKey: "VoiceInkHasLaunchedBefore")  // Allow trial to restart
+        userDefaults.set(false, forKey: UserDefaults.Keys.licenseRequiresActivation)
+        userDefaults.set(false, forKey: UserDefaults.Keys.hasLaunchedBefore)  // Allow trial to restart
         userDefaults.activationsLimit = 0
 
         licenseState = .trial(daysRemaining: trialPeriodDays)  // Reset to trial state
@@ -197,7 +197,7 @@ class LicenseViewModel: ObservableObject {
 // UserDefaults extension for non-sensitive license settings
 extension UserDefaults {
     var activationsLimit: Int {
-        get { integer(forKey: "VoiceInkActivationsLimit") }
-        set { set(newValue, forKey: "VoiceInkActivationsLimit") }
+        get { integer(forKey: UserDefaults.Keys.activationsLimit) }
+        set { set(newValue, forKey: UserDefaults.Keys.activationsLimit) }
     }
 }

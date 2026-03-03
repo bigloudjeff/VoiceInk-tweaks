@@ -35,7 +35,7 @@ class WhisperState: NSObject, ObservableObject {
  var activeTranscriptionTask: Task<Void, Never>?
 
 
- @Published var recorderType: String = UserDefaults.standard.string(forKey: "RecorderType") ?? "mini" {
+ @Published var recorderType: String = UserDefaults.standard.string(forKey: UserDefaults.Keys.recorderType) ?? "mini" {
  didSet {
  if isMiniRecorderVisible {
  if oldValue == "notch" {
@@ -50,29 +50,28 @@ class WhisperState: NSObject, ObservableObject {
  showRecorderPanel()
  }
  }
- UserDefaults.standard.set(recorderType, forKey: "RecorderType")
+ UserDefaults.standard.set(recorderType, forKey: UserDefaults.Keys.recorderType)
  }
  }
 
- @Published var recorderScreenSelection: String = UserDefaults.standard.string(forKey: "recorderScreenSelection") ?? "mouseCursor" {
+ @Published var recorderScreenSelection: String = UserDefaults.standard.string(forKey: UserDefaults.Keys.recorderScreenSelection) ?? "mouseCursor" {
  didSet {
- UserDefaults.standard.set(recorderScreenSelection, forKey: "recorderScreenSelection")
+ UserDefaults.standard.set(recorderScreenSelection, forKey: UserDefaults.Keys.recorderScreenSelection)
  }
  }
 
- var selectedScreen: NSScreen {
+ var selectedScreen: NSScreen? {
  switch recorderScreenSelection {
  case "mouseCursor":
  return NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) }
   ?? NSScreen.main
-  ?? NSScreen.screens.first!
+  ?? NSScreen.screens.first
  case "primaryDisplay":
  return NSScreen.screens.first
   ?? NSScreen.main
-  ?? NSScreen.screens.first!
  default: // "activeWindow"
  return NSScreen.main
-  ?? NSScreen.screens.first!
+  ?? NSScreen.screens.first
  }
  }
  
@@ -197,7 +196,11 @@ class WhisperState: NSObject, ObservableObject {
  transcriptionStatus: .pending
  )
  modelContext.insert(transcription)
- try? modelContext.save()
+ do {
+  try modelContext.save()
+ } catch {
+  logger.error("Failed to save new transcription: \(error.localizedDescription, privacy: .public)")
+ }
  NotificationCenter.default.post(name: .transcriptionCreated, object: transcription)
 
  let task = Task { await self.transcribeAudio(on: transcription) }
@@ -343,7 +346,11 @@ class WhisperState: NSObject, ObservableObject {
  }
  transcription.text = "Transcription Failed: Invalid audio file URL"
  transcription.transcriptionStatus = TranscriptionStatus.failed.rawValue
- try? modelContext.save()
+ do {
+  try modelContext.save()
+ } catch {
+  logger.error("Failed to save transcription failure status: \(error.localizedDescription, privacy: .public)")
+ }
  return
  }
 
@@ -361,7 +368,7 @@ class WhisperState: NSObject, ObservableObject {
 
  // Play stop sound when transcription starts with a small delay
  Task {
- let isSystemMuteEnabled = UserDefaults.standard.bool(forKey: "isSystemMuteEnabled")
+ let isSystemMuteEnabled = UserDefaults.standard.bool(forKey: UserDefaults.Keys.isSystemMuteEnabled)
  if isSystemMuteEnabled {
  try? await Task.sleep(nanoseconds: 200_000_000) // 200 milliseconds delay
  }
@@ -396,9 +403,9 @@ class WhisperState: NSObject, ObservableObject {
  } else {
  text = try await serviceRegistry.transcribe(audioURL: url, model: model)
  }
- logger.notice(" Transcript: \(text, privacy: .public)")
+ logger.notice(" Transcript: \(text, privacy: .private)")
  text = TranscriptionOutputFilter.filter(text)
- logger.notice(" Output filter result: \(text, privacy: .public)")
+ logger.notice(" Output filter result: \(text, privacy: .private)")
  let transcriptionDuration = Date().timeIntervalSince(transcriptionStart)
 
  let powerModeManager = PowerModeManager.shared
@@ -410,13 +417,13 @@ class WhisperState: NSObject, ObservableObject {
 
  text = text.trimmingCharacters(in: .whitespacesAndNewlines)
 
- if UserDefaults.standard.bool(forKey: "IsTextFormattingEnabled") {
+ if UserDefaults.standard.bool(forKey: UserDefaults.Keys.isTextFormattingEnabled) {
  text = WhisperTextFormatter.format(text)
- logger.notice(" Formatted transcript: \(text, privacy: .public)")
+ logger.notice(" Formatted transcript: \(text, privacy: .private)")
  }
 
  text = WordReplacementService.shared.applyReplacements(to: text, using: modelContext)
- logger.notice(" WordReplacement: \(text, privacy: .public)")
+ logger.notice(" WordReplacement: \(text, privacy: .private)")
 
  let audioAsset = AVURLAsset(url: url)
  let actualDuration = (try? CMTimeGetSeconds(await audioAsset.load(.duration))) ?? 0.0
@@ -460,7 +467,7 @@ class WhisperState: NSObject, ObservableObject {
  self.enhancementTask = task
  let (enhancedText, enhancementDuration, promptName) = try await task.value
  self.enhancementTask = nil
- logger.notice(" AI enhancement: \(enhancedText, privacy: .public)")
+ logger.notice(" AI enhancement: \(enhancedText, privacy: .private)")
  transcription.enhancedText = enhancedText
  transcription.aiEnhancementModelName = enhancementService.getAIService()?.currentModel
  transcription.promptName = promptName
@@ -503,7 +510,11 @@ class WhisperState: NSObject, ObservableObject {
  } catch is CancellationError {
  logger.notice("Transcription cancelled, cleaning up silently")
  modelContext.delete(transcription)
- try? modelContext.save()
+ do {
+  try modelContext.save()
+ } catch {
+  logger.error("Failed to save after cancellation cleanup: \(error.localizedDescription, privacy: .public)")
+ }
  recorder.restoreAudio()
  await self.dismissMiniRecorder()
  scheduleModelCleanup()
@@ -517,7 +528,11 @@ class WhisperState: NSObject, ObservableObject {
  transcription.transcriptionStatus = TranscriptionStatus.failed.rawValue
  }
 
- try? modelContext.save()
+ do {
+  try modelContext.save()
+ } catch {
+  logger.error("Failed to save completed transcription: \(error.localizedDescription, privacy: .public)")
+ }
 
  NotificationCenter.default.post(name: .transcriptionCompleted, object: transcription)
 

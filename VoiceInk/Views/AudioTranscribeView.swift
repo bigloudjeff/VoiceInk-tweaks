@@ -2,8 +2,10 @@ import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
 import AVFoundation
+import os
 
 struct AudioTranscribeView: View {
+    private static let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "AudioTranscribeView")
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var whisperState: WhisperState
     @StateObject private var transcriptionManager = AudioTranscriptionManager.shared
@@ -41,7 +43,10 @@ struct AudioTranscribeView: View {
             }
             return false
         }
-        .alert("Error", isPresented: .constant(transcriptionManager.errorMessage != nil)) {
+        .alert("Error", isPresented: Binding(
+            get: { transcriptionManager.errorMessage != nil },
+            set: { if !$0 { transcriptionManager.errorMessage = nil } }
+        )) {
             Button("OK", role: .cancel) {
                 transcriptionManager.errorMessage = nil
             }
@@ -238,7 +243,7 @@ struct AudioTranscribeView: View {
             if provider.hasItemConformingToTypeIdentifier(typeIdentifier) {
                 provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { (item, error) in
                     if let error = error {
-                        print("Error loading dropped file with type \(typeIdentifier): \(error)")
+                        Self.logger.error("Error loading dropped file with type \(typeIdentifier, privacy: .public): \(error.localizedDescription, privacy: .public)")
                         return
                     }
                     
@@ -271,11 +276,11 @@ struct AudioTranscribeView: View {
     }
     
     private func validateAndSetAudioFile(_ url: URL) {
-        print("Attempting to validate file: \(url.path)")
+        Self.logger.notice("Attempting to validate file: \(url.path, privacy: .public)")
         
         // Check if file exists
         guard FileManager.default.fileExists(atPath: url.path) else {
-            print("File does not exist at path: \(url.path)")
+            Self.logger.error("File does not exist at path: \(url.path, privacy: .public)")
             return
         }
         
@@ -290,7 +295,7 @@ struct AudioTranscribeView: View {
         // Validate file type
         guard SupportedMedia.isSupported(url: url) else { return }
         
-        print("File validated successfully: \(url.lastPathComponent)")
+        Self.logger.notice("File validated successfully: \(url.lastPathComponent, privacy: .public)")
         selectedAudioURL = url
         isAudioFileSelected = true
     }

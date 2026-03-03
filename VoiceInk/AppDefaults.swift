@@ -9,49 +9,49 @@ enum AppDefaults {
             "autoUpdateCheck": true,
 
             // Clipboard
-            "restoreClipboardAfterPaste": true,
-            "clipboardRestoreDelay": 0.25,
-            "useAppleScriptPaste": false,
-            "pasteMethod": "default",
+            UserDefaults.Keys.restoreClipboardAfterPaste: true,
+            UserDefaults.Keys.clipboardRestoreDelay: 0.25,
+            UserDefaults.Keys.useAppleScriptPaste: false,
+            UserDefaults.Keys.pasteMethod: "default",
             "typeOutDelay": 3.0,
 
             // Audio & Media
-            "isSystemMuteEnabled": true,
-            "audioResumptionDelay": 0.0,
-            "isPauseMediaEnabled": false,
+            UserDefaults.Keys.isSystemMuteEnabled: true,
+            UserDefaults.Keys.audioResumptionDelay: 0.0,
+            UserDefaults.Keys.isPauseMediaEnabled: false,
             "isSoundFeedbackEnabled": true,
 
             // Recording & Transcription
-            "IsTextFormattingEnabled": true,
-            "IsVADEnabled": true,
+            UserDefaults.Keys.isTextFormattingEnabled: true,
+            UserDefaults.Keys.isVADEnabled: true,
             "RemoveFillerWords": true,
-            "SelectedLanguage": "en",
-            "AppendTrailingSpace": true,
-            "RecorderType": "mini",
-            "recorderScreenSelection": "mouseCursor",
+            UserDefaults.Keys.selectedLanguage: "en",
+            UserDefaults.Keys.appendTrailingSpace: true,
+            UserDefaults.Keys.recorderType: "mini",
+            UserDefaults.Keys.recorderScreenSelection: "mouseCursor",
             "warnNoTextField": true,
 
             // Cleanup
-            "IsTranscriptionCleanupEnabled": false,
+            UserDefaults.Keys.isTranscriptionCleanupEnabled: false,
             "TranscriptionRetentionMinutes": 1440,
-            "IsAudioCleanupEnabled": false,
-            "AudioRetentionPeriod": 7,
+            UserDefaults.Keys.isAudioCleanupEnabled: false,
+            UserDefaults.Keys.audioRetentionPeriod: 7,
 
             // UI & Behavior
-            "IsMenuBarOnly": false,
+            UserDefaults.Keys.isMenuBarOnly: false,
             "powerModeAutoRestoreEnabled": false,
             // Hotkey
-            "recordingMode": "hybrid",
-            "companionModifier1": "none",
-            "companionModifier2": "none",
-            "isMiddleClickToggleEnabled": false,
-            "middleClickActivationDelay": 200,
+            UserDefaults.Keys.recordingMode: "hybrid",
+            UserDefaults.Keys.companionModifier1: "none",
+            UserDefaults.Keys.companionModifier2: "none",
+            UserDefaults.Keys.isMiddleClickToggleEnabled: false,
+            UserDefaults.Keys.middleClickActivationDelay: 200,
 
             // Enhancement
-            "enhancementMode": "off",
-            "isToggleEnhancementShortcutEnabled": true,
-            "backgroundEnhancementEnabled": false,
-            "vocabularyExtractionEnabled": true,
+            UserDefaults.Keys.enhancementMode: "off",
+            UserDefaults.Keys.isToggleEnhancementShortcutEnabled: true,
+            UserDefaults.Keys.backgroundEnhancementEnabled: false,
+            UserDefaults.Keys.vocabularyExtractionEnabled: true,
             "autoGeneratePhoneticHints": false,
 
             // Model

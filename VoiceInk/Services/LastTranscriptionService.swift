@@ -1,7 +1,9 @@
 import Foundation
 import SwiftData
+import os
 
 class LastTranscriptionService: ObservableObject {
+    private static let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "LastTranscriptionService")
     
     static func getLastTranscription(from modelContext: ModelContext) -> Transcription? {
         var descriptor = FetchDescriptor<Transcription>(
@@ -13,7 +15,7 @@ class LastTranscriptionService: ObservableObject {
             let transcriptions = try modelContext.fetch(descriptor)
             return transcriptions.first
         } catch {
-            print("Error fetching last transcription: \(error)")
+            logger.error("Error fetching last transcription: \(error.localizedDescription, privacy: .public)")
             return nil
         }
     }

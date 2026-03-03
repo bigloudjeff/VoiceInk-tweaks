@@ -71,9 +71,9 @@ final class LicenseManager {
         guard !userDefaults.bool(forKey: migrationCompletedKey) else { return }
 
         // Migrate license key
-        if let oldLicenseKey = userDefaults.string(forKey: "VoiceInkLicense"), !oldLicenseKey.isEmpty {
+        if let oldLicenseKey = userDefaults.string(forKey: UserDefaults.Keys.license), !oldLicenseKey.isEmpty {
             licenseKey = oldLicenseKey
-            userDefaults.removeObject(forKey: "VoiceInkLicense")
+            userDefaults.removeObject(forKey: UserDefaults.Keys.license)
             logger.info("Migrated license key to Keychain")
         }
 
@@ -85,9 +85,9 @@ final class LicenseManager {
         }
 
         // Migrate activation ID
-        if let oldActivationId = userDefaults.string(forKey: "VoiceInkActivationId"), !oldActivationId.isEmpty {
+        if let oldActivationId = userDefaults.string(forKey: UserDefaults.Keys.activationId), !oldActivationId.isEmpty {
             activationId = oldActivationId
-            userDefaults.removeObject(forKey: "VoiceInkActivationId")
+            userDefaults.removeObject(forKey: UserDefaults.Keys.activationId)
             logger.info("Migrated activation ID to Keychain")
         }
 

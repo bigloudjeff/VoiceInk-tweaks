@@ -29,7 +29,7 @@ final class DeepgramStreamingProvider: StreamingTranscriptionProvider {
             throw StreamingTranscriptionError.missingAPIKey
         }
 
-        let vocabulary = getCustomVocabularyTerms()
+        let vocabulary = CustomVocabularyService.shared.getUniqueTerms(from: modelContext, limit: 50)
 
         // Cancel any existing forwarding task before starting a new one
         forwardingTask?.cancel()
@@ -88,24 +88,7 @@ final class DeepgramStreamingProvider: StreamingTranscriptionProvider {
         }
     }
 
-    private func getCustomVocabularyTerms() -> [String] {
-        let descriptor = FetchDescriptor<VocabularyWord>(sortBy: [SortDescriptor(\.word)])
-        guard let vocabularyWords = try? modelContext.fetch(descriptor) else {
-            return []
-        }
-        var seen = Set<String>()
-        var unique: [String] = []
-        for word in vocabularyWords {
-            let trimmed = word.word.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty else { continue }
-            let key = trimmed.lowercased()
-            if !seen.contains(key) {
-                seen.insert(key)
-                unique.append(trimmed)
-            }
-        }
-        return Array(unique.prefix(50))
-    }
+
 
     private func mapError(_ error: Error) -> Error {
         guard let llmError = error as? LLMKitError else { return error }

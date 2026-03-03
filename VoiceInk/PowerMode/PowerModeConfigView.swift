@@ -101,7 +101,7 @@ struct ConfigurationView: View {
  _isAutoSendEnabled = State(initialValue: false)
  _isDefault = State(initialValue: false)
  // Default to current global AI provider/model for new configurations - use UserDefaults only
- _selectedAIProvider = State(initialValue: UserDefaults.standard.string(forKey: "selectedAIProvider"))
+ _selectedAIProvider = State(initialValue: UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedAIProvider))
  _selectedAIModel = State(initialValue: nil) // Initialize to nil and set it after view appears
  case .edit(let config):
  // Get the latest version of this config from PowerModeManager
@@ -293,7 +293,7 @@ struct ConfigurationView: View {
  let modelInfo = whisperState.allAvailableModels.first(where: { $0.name == selectedModel }),
  modelInfo.isMultilingualModel {
  let languageBinding = Binding<String?>(
- get: { selectedLanguage ?? UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto" },
+ get: { selectedLanguage ?? UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage) ?? "auto" },
  set: { selectedLanguage = $0 }
  )
 

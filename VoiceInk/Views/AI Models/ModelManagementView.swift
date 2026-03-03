@@ -117,6 +117,7 @@ struct ModelManagementView: View {
                         )
                 }
                 .buttonStyle(PlainButtonStyle())
+                .help("Settings")
                 .accessibilityIdentifier(AccessibilityID.Models.buttonSettings)
             }
             .padding(.bottom, 12)

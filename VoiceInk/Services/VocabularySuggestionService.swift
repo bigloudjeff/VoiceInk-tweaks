@@ -46,7 +46,7 @@ class VocabularySuggestionService: NSObject {
  }
 
  private func processTranscription(id transcriptionId: UUID) {
-  guard UserDefaults.standard.bool(forKey: "vocabularyExtractionEnabled") else { return }
+  guard UserDefaults.standard.bool(forKey: UserDefaults.Keys.vocabularyExtractionEnabled) else { return }
   guard let modelContainer = modelContainer else {
    logger.error("VocabularySuggestionService not configured")
    return
@@ -73,7 +73,7 @@ class VocabularySuggestionService: NSObject {
     return
    }
 
-   var languageCode = UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "en"
+   var languageCode = UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage) ?? "en"
    if languageCode == "auto" {
     languageCode = "en"
    }

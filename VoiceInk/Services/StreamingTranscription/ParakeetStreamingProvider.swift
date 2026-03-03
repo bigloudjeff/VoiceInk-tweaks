@@ -42,7 +42,7 @@ final class ParakeetStreamingProvider: StreamingTranscriptionProvider {
             throw StreamingTranscriptionError.notConnected
         }
 
-        let buffer = Self.convertToAudioBuffer(data)
+        guard let buffer = Self.convertToAudioBuffer(data) else { return }
         await manager.streamAudio(buffer)
     }
 
@@ -69,20 +69,21 @@ final class ParakeetStreamingProvider: StreamingTranscriptionProvider {
 
     /// Converts raw PCM Int16 16kHz mono Data to a Float32 AVAudioPCMBuffer
     /// that FluidAudio's AudioConverter can process.
-    private static func convertToAudioBuffer(_ data: Data) -> AVAudioPCMBuffer {
+    private static func convertToAudioBuffer(_ data: Data) -> AVAudioPCMBuffer? {
         let sampleCount = data.count / MemoryLayout<Int16>.size
-        let format = AVAudioFormat(
+        guard sampleCount > 0 else { return nil }
+        guard let format = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
             sampleRate: 16000,
             channels: 1,
             interleaved: true
-        )!
-        let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(sampleCount))!
+        ) else { return nil }
+        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(sampleCount)) else { return nil }
         buffer.frameLength = AVAudioFrameCount(sampleCount)
 
+        guard let floatPtr = buffer.floatChannelData?[0] else { return nil }
         data.withUnsafeBytes { rawPtr in
             let int16Ptr = rawPtr.bindMemory(to: Int16.self)
-            let floatPtr = buffer.floatChannelData![0]
             for i in 0..<sampleCount {
                 floatPtr[i] = Float(int16Ptr[i]) / 32767.0
             }

@@ -15,6 +15,7 @@ struct TranscriptionListItem: View {
             ))
             .toggleStyle(CircularCheckboxStyle())
             .labelsHidden()
+            .accessibilityLabel(isChecked ? "Deselect transcription" : "Select transcription")
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack {

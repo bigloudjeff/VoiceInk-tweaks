@@ -47,7 +47,7 @@ class PhoneticHintMiningService {
    return []
   }
 
-  var languageCode = UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "en"
+  var languageCode = UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage) ?? "en"
   if languageCode == "auto" {
    languageCode = "en"
   }

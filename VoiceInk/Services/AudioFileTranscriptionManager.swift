@@ -92,7 +92,7 @@ class AudioTranscriptionManager: ObservableObject {
                 let powerModeName = (activePowerModeConfig?.isEnabled == true) ? activePowerModeConfig?.name : nil
                 let powerModeEmoji = (activePowerModeConfig?.isEnabled == true) ? activePowerModeConfig?.emoji : nil
 
-                if UserDefaults.standard.bool(forKey: "IsTextFormattingEnabled") {
+                if UserDefaults.standard.bool(forKey: UserDefaults.Keys.isTextFormattingEnabled) {
                     text = WhisperTextFormatter.format(text)
                 }
 

@@ -100,7 +100,7 @@ class CloudTranscriptionService: TranscriptionService {
 
             case .soniox:
                 let apiKey = try requireAPIKey(forProvider: "Soniox")
-                let customVocabulary = getCustomDictionaryTerms()
+                let customVocabulary = CustomVocabularyService.shared.getUniqueTerms(from: modelContext)
                 return try await SonioxClient.transcribe(
                     audioData: audioData,
                     fileName: fileName,
@@ -145,33 +145,16 @@ class CloudTranscriptionService: TranscriptionService {
     }
 
     private func selectedLanguage() -> String? {
-        let lang = UserDefaults.standard.string(forKey: "SelectedLanguage") ?? "auto"
+        let lang = UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage) ?? "auto"
         return (lang == "auto" || lang.isEmpty) ? nil : lang
     }
 
     private func transcriptionPrompt() -> String? {
-        let prompt = UserDefaults.standard.string(forKey: "TranscriptionPrompt") ?? ""
+        let prompt = UserDefaults.standard.string(forKey: UserDefaults.Keys.transcriptionPrompt) ?? ""
         return prompt.isEmpty ? nil : prompt
     }
 
-    private func getCustomDictionaryTerms() -> [String] {
-        let descriptor = FetchDescriptor<VocabularyWord>(sortBy: [SortDescriptor(\.word)])
-        guard let vocabularyWords = try? modelContext.fetch(descriptor) else {
-            return []
-        }
-        var seen = Set<String>()
-        var unique: [String] = []
-        for word in vocabularyWords {
-            let trimmed = word.word.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty else { continue }
-            let key = trimmed.lowercased()
-            if !seen.contains(key) {
-                seen.insert(key)
-                unique.append(trimmed)
-            }
-        }
-        return unique
-    }
+
 
     private func mapLLMKitError(_ error: LLMKitError) -> CloudTranscriptionError {
         switch error {

@@ -74,7 +74,7 @@ class CustomModelManager: ObservableObject {
         if apiEndpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             errors.append("API endpoint cannot be empty")
         } else if !isValidURL(apiEndpoint) {
-            errors.append("API endpoint must be a valid URL")
+            errors.append("API endpoint must be a valid HTTPS URL (HTTP is only allowed for localhost)")
         }
         
         if apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -107,7 +107,7 @@ class CustomModelManager: ObservableObject {
         if apiEndpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             errors.append("API endpoint cannot be empty")
         } else if !isValidURL(apiEndpoint) {
-            errors.append("API endpoint must be a valid URL")
+            errors.append("API endpoint must be a valid HTTPS URL (HTTP is only allowed for localhost)")
         }
         
         if apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -127,9 +127,14 @@ class CustomModelManager: ObservableObject {
     }
     
     private func isValidURL(_ string: String) -> Bool {
-        if let url = URL(string: string) {
-            return url.scheme != nil && url.host != nil
+        guard let url = URL(string: string), let scheme = url.scheme, let host = url.host else {
+            return false
         }
-        return false
+        // Allow HTTP only for localhost (local services like Ollama, mlx-lm)
+        let isLocalhost = host == "localhost" || host == "127.0.0.1" || host == "::1"
+        if scheme == "http" && !isLocalhost {
+            return false
+        }
+        return scheme == "http" || scheme == "https"
     }
 } 

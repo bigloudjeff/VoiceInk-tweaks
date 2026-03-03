@@ -15,13 +15,14 @@ struct VocabularyView: View {
     @State private var alertMessage = ""
     @State private var sortMode: VocabularySortMode = .wordAsc
     @State private var isGenerating = false
+    @State private var pendingDeleteWord: VocabularyWord?
     @State private var showHintResults = false
     @State private var hintSuggestions: [HintSuggestion] = []
 
     init(whisperPrompt: WhisperPrompt) {
         self.whisperPrompt = whisperPrompt
 
-        if let savedSort = UserDefaults.standard.string(forKey: "vocabularySortMode"),
+        if let savedSort = UserDefaults.standard.string(forKey: UserDefaults.Keys.vocabularySortMode),
            let mode = VocabularySortMode(rawValue: savedSort) {
             _sortMode = State(initialValue: mode)
         }
@@ -38,7 +39,7 @@ struct VocabularyView: View {
 
     private func toggleSort() {
         sortMode = (sortMode == .wordAsc) ? .wordDesc : .wordAsc
-        UserDefaults.standard.set(sortMode.rawValue, forKey: "vocabularySortMode")
+        UserDefaults.standard.set(sortMode.rawValue, forKey: UserDefaults.Keys.vocabularySortMode)
     }
 
     private var shouldShowAddButton: Bool {
@@ -126,7 +127,7 @@ struct VocabularyView: View {
                         FlowLayout(spacing: 8) {
                             ForEach(sortedItems) { item in
                                 VocabularyWordView(item: item, onDelete: {
-                                    removeWord(item)
+                                    pendingDeleteWord = item
                                 }, onSave: {
                                     saveContext()
                                 })
@@ -150,6 +151,25 @@ struct VocabularyView: View {
                 suggestions: $hintSuggestions,
                 modelContext: modelContext
             )
+        }
+        .confirmationDialog(
+            "Delete Word",
+            isPresented: Binding(
+                get: { pendingDeleteWord != nil },
+                set: { if !$0 { pendingDeleteWord = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                if let word = pendingDeleteWord {
+                    removeWord(word)
+                    pendingDeleteWord = nil
+                }
+            }
+        } message: {
+            if let word = pendingDeleteWord {
+                Text("Remove \"\(word.word)\" from the vocabulary?")
+            }
         }
     }
     

@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import os
 
 extension TimeInterval {
     func formatTiming() -> String {
@@ -16,6 +17,7 @@ extension TimeInterval {
 }
 
 class WaveformGenerator {
+    private static let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "WaveformGenerator")
     private static let cache = NSCache<NSString, NSArray>()
 
     static func generateWaveformSamples(from url: URL, sampleCount: Int = 200) async -> [Float] {
@@ -59,13 +61,14 @@ class WaveformGenerator {
             cache.setObject(normalizedSamples as NSArray, forKey: cacheKey)
             return normalizedSamples
         } catch {
-            print("Error reading audio file: \(error)")
+            logger.error("Error reading audio file: \(error.localizedDescription, privacy: .public)")
             return []
         }
     }
 }
 
 class AudioPlayerManager: ObservableObject {
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "AudioPlayerManager")
     private var audioPlayer: AVAudioPlayer?
     private var timer: Timer?
     @Published var isPlaying = false
@@ -89,7 +92,7 @@ class AudioPlayerManager: ObservableObject {
                 }
             }
         } catch {
-            print("Error loading audio: \(error.localizedDescription)")
+            logger.error("Error loading audio: \(error.localizedDescription, privacy: .public)")
         }
     }
     
@@ -332,6 +335,8 @@ struct AudioPlayerView: View {
                             )
                     }
                     .buttonStyle(.plain)
+                    .help(playerManager.isPlaying ? "Pause" : "Play")
+                    .accessibilityLabel(playerManager.isPlaying ? "Pause" : "Play")
                     .scaleEffect(isHovering ? 1.05 : 1.0)
                     .onHover { hovering in
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {

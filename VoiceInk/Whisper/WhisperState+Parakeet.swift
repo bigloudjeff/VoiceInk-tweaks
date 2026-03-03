@@ -71,7 +71,7 @@ extension WhisperState {
            currentModel.provider == .parakeet,
            currentModel.name == model.name {
             currentTranscriptionModel = nil
-            UserDefaults.standard.removeObject(forKey: "CurrentTranscriptionModel")
+            UserDefaults.standard.removeObject(forKey: UserDefaults.Keys.currentTranscriptionModel)
         }
 
         let version = parakeetVersion(for: model.name)

@@ -35,9 +35,9 @@ struct VoiceInkApp: App {
     init() {
         AppDefaults.registerDefaults()
 
-        if UserDefaults.standard.object(forKey: "powerModeUIFlag") == nil {
+        if UserDefaults.standard.object(forKey: UserDefaults.Keys.powerModeUIFlag) == nil {
             let hasEnabledPowerModes = PowerModeManager.shared.configurations.contains { $0.isEnabled }
-            UserDefaults.standard.set(hasEnabledPowerModes, forKey: "powerModeUIFlag")
+            UserDefaults.standard.set(hasEnabledPowerModes, forKey: UserDefaults.Keys.powerModeUIFlag)
         }
 
         let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "Initialization")
@@ -238,7 +238,7 @@ struct VoiceInkApp: App {
                         }
                         
                         // Start the automatic audio cleanup process only if transcript cleanup is not enabled
-                        if !UserDefaults.standard.bool(forKey: "IsTranscriptionCleanupEnabled") {
+                        if !UserDefaults.standard.bool(forKey: UserDefaults.Keys.isTranscriptionCleanupEnabled) {
                             audioCleanupManager.startAutomaticCleanup(modelContext: container.mainContext)
                         }
                         

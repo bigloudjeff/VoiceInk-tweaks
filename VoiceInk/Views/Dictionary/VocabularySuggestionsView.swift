@@ -9,6 +9,7 @@ struct VocabularySuggestionsView: View {
  ) private var suggestions: [VocabularySuggestion]
 
  @Environment(\.modelContext) private var modelContext
+ @State private var showDismissAllConfirmation = false
 
  var body: some View {
   VStack(alignment: .leading, spacing: 20) {
@@ -35,7 +36,7 @@ struct VocabularySuggestionsView: View {
 
       Spacer()
 
-      Button(action: dismissAll) {
+      Button(action: { showDismissAllConfirmation = true }) {
        HStack(spacing: 4) {
         Image(systemName: "xmark.circle")
          .font(.system(size: 12))
@@ -93,6 +94,12 @@ struct VocabularySuggestionsView: View {
    }
   }
   .padding()
+  .alert("Dismiss All Suggestions", isPresented: $showDismissAllConfirmation) {
+   Button("Dismiss All", role: .destructive) { dismissAll() }
+   Button("Cancel", role: .cancel) {}
+  } message: {
+   Text("This will dismiss all \(suggestions.count) pending suggestions. This cannot be undone.")
+  }
  }
 
  private var emptyState: some View {

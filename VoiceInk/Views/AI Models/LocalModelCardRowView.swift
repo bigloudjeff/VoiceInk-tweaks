@@ -191,6 +191,7 @@ struct LocalModelCardView: View {
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
                 .frame(width: 20, height: 20)
+                .help("More options")
             }
         }
     }
@@ -273,6 +274,7 @@ struct ImportedLocalModelCardView: View {
                     .menuStyle(.borderlessButton)
                     .menuIndicator(.hidden)
                     .frame(width: 20, height: 20)
+                    .help("More options")
                 }
             }
         }

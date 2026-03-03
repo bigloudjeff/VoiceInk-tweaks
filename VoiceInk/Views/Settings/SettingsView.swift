@@ -17,10 +17,10 @@ struct SettingsView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = true
     @AppStorage("autoUpdateCheck") private var autoUpdateCheck = true
     @AppStorage("enableAnnouncements") private var enableAnnouncements = true
-    @AppStorage("restoreClipboardAfterPaste") private var restoreClipboardAfterPaste = true
-    @AppStorage("clipboardRestoreDelay") private var clipboardRestoreDelay = 0.25
-    @AppStorage("useAppleScriptPaste") private var useAppleScriptPaste = false
-    @AppStorage("pasteMethod") private var pasteMethod = "default"
+    @AppStorage(UserDefaults.Keys.restoreClipboardAfterPaste) private var restoreClipboardAfterPaste = true
+    @AppStorage(UserDefaults.Keys.clipboardRestoreDelay) private var clipboardRestoreDelay = 0.25
+    @AppStorage(UserDefaults.Keys.useAppleScriptPaste) private var useAppleScriptPaste = false
+    @AppStorage(UserDefaults.Keys.pasteMethod) private var pasteMethod = "default"
     @AppStorage("typeOutDelay") private var typeOutDelay = 3.0
     @AppStorage("warnNoTextField") private var warnNoTextField = true
     @State private var showResetOnboardingAlert = false
@@ -486,7 +486,7 @@ struct ExpandableSettingsRow<Content: View>: View {
 
 struct PowerModeSection: View {
     @ObservedObject private var powerModeManager = PowerModeManager.shared
-    @AppStorage("powerModeUIFlag") private var powerModeUIFlag = false
+    @AppStorage(UserDefaults.Keys.powerModeUIFlag) private var powerModeUIFlag = false
     @AppStorage(PowerModeDefaults.autoRestoreKey) private var powerModeAutoRestoreEnabled = false
     @State private var showDisableAlert = false
     @State private var isExpanded = false

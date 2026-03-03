@@ -86,7 +86,7 @@ class ParakeetTranscriptionService: TranscriptionService {
         let audioSamples = try readAudioSamples(from: audioURL)
 
         let durationSeconds = Double(audioSamples.count) / 16000.0
-        let isVADEnabled = UserDefaults.standard.bool(forKey: "IsVADEnabled")
+        let isVADEnabled = UserDefaults.standard.bool(forKey: UserDefaults.Keys.isVADEnabled)
 
         var speechAudio = audioSamples
         if durationSeconds >= 20.0, isVADEnabled {

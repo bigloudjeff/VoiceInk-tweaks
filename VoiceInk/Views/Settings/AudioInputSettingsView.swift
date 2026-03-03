@@ -412,12 +412,14 @@ struct DevicePriorityCard: View {
                                 .foregroundStyle(canMoveUp ? .blue : .secondary.opacity(0.5))
                         }
                         .disabled(!canMoveUp)
-                        
+                        .help("Move up")
+
                         Button(action: onMoveDown) {
                             Image(systemName: "chevron.down")
                                 .foregroundStyle(canMoveDown ? .blue : .secondary.opacity(0.5))
                         }
                         .disabled(!canMoveDown)
+                        .help("Move down")
                     }
                 }
                 
@@ -427,6 +429,7 @@ struct DevicePriorityCard: View {
                         .symbolRenderingMode(.hierarchical)
                         .foregroundStyle(isPrioritized ? .red : .blue)
                 }
+                .help(isPrioritized ? "Remove from priority list" : "Add to priority list")
             }
             .buttonStyle(.plain)
         }

@@ -1,11 +1,13 @@
 import SwiftUI
 import SwiftData
 import AppKit
+import os
 
 class MenuBarManager: ObservableObject {
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "MenuBarManager")
     @Published var isMenuBarOnly: Bool {
         didSet {
-            UserDefaults.standard.set(isMenuBarOnly, forKey: "IsMenuBarOnly")
+            UserDefaults.standard.set(isMenuBarOnly, forKey: UserDefaults.Keys.isMenuBarOnly)
             updateAppActivationPolicy()
         }
     }
@@ -14,7 +16,7 @@ class MenuBarManager: ObservableObject {
     private var whisperState: WhisperState?
 
     init() {
-        self.isMenuBarOnly = UserDefaults.standard.bool(forKey: "IsMenuBarOnly")
+        self.isMenuBarOnly = UserDefaults.standard.bool(forKey: UserDefaults.Keys.isMenuBarOnly)
         updateAppActivationPolicy()
 
         NotificationCenter.default.addObserver(
@@ -58,7 +60,7 @@ class MenuBarManager: ObservableObject {
     func focusMainWindow() {
         NSApplication.shared.setActivationPolicy(.regular)
         if WindowManager.shared.showMainWindow() == nil {
-            print("MenuBarManager: Unable to locate main window to focus")
+            logger.warning("MenuBarManager: Unable to locate main window to focus")
         }
     }
     
@@ -83,12 +85,12 @@ class MenuBarManager: ObservableObject {
     }
     
     func openMainWindowAndNavigate(to destination: String) {
-        print("MenuBarManager: Navigating to \(destination)")
+        logger.notice("MenuBarManager: Navigating to \(destination, privacy: .public)")
 
         NSApplication.shared.setActivationPolicy(.regular)
 
         guard WindowManager.shared.showMainWindow() != nil else {
-            print("MenuBarManager: Unable to show main window for navigation")
+            logger.warning("MenuBarManager: Unable to show main window for navigation")
             return
         }
 
@@ -99,14 +101,14 @@ class MenuBarManager: ObservableObject {
                 object: nil,
                 userInfo: ["destination": destination]
             )
-            print("MenuBarManager: Posted navigation notification for \(destination)")
+            self.logger.notice("MenuBarManager: Posted navigation notification for \(destination, privacy: .public)")
         }
     }
 
     func openHistoryWindow() {
         guard let modelContainer = modelContainer,
               let whisperState = whisperState else {
-            print("MenuBarManager: Dependencies not configured")
+            logger.warning("MenuBarManager: Dependencies not configured")
             return
         }
         NSApplication.shared.setActivationPolicy(.regular)

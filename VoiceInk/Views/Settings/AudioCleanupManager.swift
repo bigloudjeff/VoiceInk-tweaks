@@ -1,9 +1,11 @@
 import Foundation
 import SwiftData
+import os
 
 /// A utility class that manages automatic cleanup of audio files while preserving transcript data
 class AudioCleanupManager {
     static let shared = AudioCleanupManager()
+    private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "AudioCleanupManager")
 
     private var cleanupTimer: Timer?
     
@@ -40,7 +42,7 @@ class AudioCleanupManager {
     /// Get information about the files that would be cleaned up
     func getCleanupInfo(modelContext: ModelContext) async -> (fileCount: Int, totalSize: Int64, transcriptions: [Transcription]) {
         // Get retention period from UserDefaults
-        let effectiveRetentionDays = UserDefaults.standard.integer(forKey: "AudioRetentionPeriod")
+        let effectiveRetentionDays = UserDefaults.standard.integer(forKey: UserDefaults.Keys.audioRetentionPeriod)
 
         // Calculate the cutoff date
         let calendar = Calendar.current
@@ -90,10 +92,10 @@ class AudioCleanupManager {
     /// Perform the cleanup operation
     private func performCleanup(modelContext: ModelContext) async {
         // Get retention period from UserDefaults
-        let effectiveRetentionDays = UserDefaults.standard.integer(forKey: "AudioRetentionPeriod")
+        let effectiveRetentionDays = UserDefaults.standard.integer(forKey: UserDefaults.Keys.audioRetentionPeriod)
 
         // Check if automatic cleanup is enabled
-        let isCleanupEnabled = UserDefaults.standard.bool(forKey: "IsAudioCleanupEnabled")
+        let isCleanupEnabled = UserDefaults.standard.bool(forKey: UserDefaults.Keys.isAudioCleanupEnabled)
         guard isCleanupEnabled else { return }
 
         // Calculate the cutoff date
@@ -168,7 +170,11 @@ class AudioCleanupManager {
                 }
 
                 if deletedCount > 0 || errorCount > 0 {
-                    try? modelContext.save()
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        logger.error("Failed to save after audio cleanup: \(error.localizedDescription, privacy: .public)")
+                    }
                 }
 
                 return (deletedCount, errorCount)

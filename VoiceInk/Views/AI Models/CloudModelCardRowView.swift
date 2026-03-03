@@ -1,8 +1,10 @@
 import SwiftUI
 import AppKit
+import os
 
 // MARK: - Cloud Model Card View
 struct CloudModelCardView: View {
+    private static let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "CloudModelCardView")
     let model: CloudModel
     let isCurrent: Bool
     var setDefaultAction: () -> Void
@@ -296,7 +298,7 @@ struct CloudModelCardView: View {
             aiService.selectedProvider = .soniox
         default:
             // This case should ideally not be hit for cloud models in this view
-            print("Warning: verifyAPIKey called for unsupported provider \(model.provider.rawValue)")
+            Self.logger.warning("verifyAPIKey called for unsupported provider \(model.provider.rawValue, privacy: .public)")
             isVerifying = false
             verificationStatus = .failure
             return
@@ -336,7 +338,7 @@ struct CloudModelCardView: View {
             Task {
                 await MainActor.run {
                     whisperState.currentTranscriptionModel = nil
-                    UserDefaults.standard.removeObject(forKey: "CurrentTranscriptionModel")
+                    UserDefaults.standard.removeObject(forKey: UserDefaults.Keys.currentTranscriptionModel)
                 }
             }
         }

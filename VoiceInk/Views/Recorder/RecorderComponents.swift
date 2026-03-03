@@ -88,6 +88,7 @@ struct RecorderRecordButton: View {
  }
  }
  .accessibilityIdentifier(AccessibilityID.Recorder.buttonRecord)
+ .accessibilityLabel(isProcessing ? "Processing" : (isRecording ? "Stop recording" : "Start recording"))
  .buttonStyle(PlainButtonStyle())
  .disabled(isProcessing)
  }

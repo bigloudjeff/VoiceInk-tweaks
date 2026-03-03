@@ -8,7 +8,7 @@ class TranscriptionAutoCleanupService {
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "TranscriptionAutoCleanupService")
     private var modelContext: ModelContext?
 
-    private let keyIsEnabled = "IsTranscriptionCleanupEnabled"
+    private let keyIsEnabled = UserDefaults.Keys.isTranscriptionCleanupEnabled
     private let keyRetentionMinutes = "TranscriptionRetentionMinutes"
 
     private let defaultRetentionMinutes: Int = 24 * 60

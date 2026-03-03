@@ -5,7 +5,7 @@ import SwiftUI
 extension WhisperState {
     // Loads the default transcription model from UserDefaults
     func loadCurrentTranscriptionModel() {
-        if let savedModelName = UserDefaults.standard.string(forKey: "CurrentTranscriptionModel"),
+        if let savedModelName = UserDefaults.standard.string(forKey: UserDefaults.Keys.currentTranscriptionModel),
            let savedModel = allAvailableModels.first(where: { $0.name == savedModelName }) {
             currentTranscriptionModel = savedModel
         }
@@ -14,7 +14,7 @@ extension WhisperState {
     // Function to set any transcription model as default
     func setDefaultTranscriptionModel(_ model: any TranscriptionModel) {
         self.currentTranscriptionModel = model
-        UserDefaults.standard.set(model.name, forKey: "CurrentTranscriptionModel")
+        UserDefaults.standard.set(model.name, forKey: UserDefaults.Keys.currentTranscriptionModel)
 
         // For cloud models, clear the old loadedLocalModel
         if model.provider != .local {
@@ -45,11 +45,27 @@ extension WhisperState {
                     // Release old context before loading new one
                     await self.whisperContext?.releaseResources()
                     await MainActor.run { self.whisperContext = nil }
-                    try? await self.loadModel(localModel)
+                    do {
+                        try await self.loadModel(localModel)
+                    } catch {
+                        await self.logger.error("Failed to preload local model '\(localModel.name, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+                        await NotificationManager.shared.showNotification(
+                            title: "Failed to load model \(localModel.name). Try re-downloading it.",
+                            type: .error
+                        )
+                    }
                 }
             case .parakeet:
                 if let parakeetModel = model as? ParakeetModel {
-                    try? await self.serviceRegistry.parakeetTranscriptionService.loadModel(for: parakeetModel)
+                    do {
+                        try await self.serviceRegistry.parakeetTranscriptionService.loadModel(for: parakeetModel)
+                    } catch {
+                        await self.logger.error("Failed to preload Parakeet model '\(parakeetModel.name, privacy: .public)': \(error.localizedDescription, privacy: .public)")
+                        await NotificationManager.shared.showNotification(
+                            title: "Failed to load model \(parakeetModel.name). Try re-downloading it.",
+                            type: .error
+                        )
+                    }
                 }
             default:
                 break
