@@ -61,16 +61,6 @@ struct AppShortcuts: AppShortcutsProvider {
   )
 
   AppShortcut(
-   intent: GetRecordingStateIntent(),
-   phrases: [
-    "Get \(.applicationName) recording state",
-    "What is \(.applicationName) doing"
-   ],
-   shortTitle: "Get Recording State",
-   systemImageName: "info.circle"
-  )
-
-  AppShortcut(
    intent: ActivatePowerModeIntent(),
    phrases: [
     "Activate \(.applicationName) Power Mode",
@@ -108,6 +98,16 @@ struct AppShortcuts: AppShortcutsProvider {
    ],
    shortTitle: "Transcribe Audio File",
    systemImageName: "waveform"
+  )
+
+  AppShortcut(
+   intent: AddVocabularyIntent(),
+   phrases: [
+    "Add word to \(.applicationName) vocabulary",
+    "Add \(.applicationName) vocabulary"
+   ],
+   shortTitle: "Add Vocabulary",
+   systemImageName: "text.badge.plus"
   )
  }
 }
