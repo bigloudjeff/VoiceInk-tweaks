@@ -90,6 +90,30 @@ Both use shared components from `RecorderComponents.swift`: `RecorderPromptButto
 
 `ContentView.swift` uses `NavigationSplitView` with a sidebar containing `ViewType` enum cases. History opens in a separate window via `HistoryWindowController`.
 
+### Automation Interfaces
+
+VoiceInk exposes its features via three automation interfaces, all backed by shared service methods in `CustomVocabularyService` and direct `UserDefaults` / `AppServiceLocator` access.
+
+**AppleScript** (`VoiceInk.sdef` + `ScriptCommands.swift` + `ScriptableProperties.swift`):
+- Read-only properties on the application class: `recording state`, `current model`, `current language`, `recording mode`, `recorder style`, `paste method`, `sound enabled`, `enhancement enabled/mode`, `active prompt name`, `active power mode`
+- Commands for recording, enhancement, settings toggles, vocabulary, word replacements, queries, and navigation
+- Usage: `osascript -e 'tell application "VoiceInk" to <command>'`
+
+**App Intents / Siri Shortcuts** (`AppIntents/VocabularyIntents.swift`, `AppIntents/SettingsIntents.swift`):
+- AppIntent structs for vocabulary, word replacements, settings, and query commands
+- Registered in `AppShortcuts.swift` (max 10 Siri phrases; remaining intents available as Shortcuts actions)
+- All intents are `@MainActor` and access services via `AppServiceLocator.shared`
+
+**URL Scheme** (`VoiceInkURLHandler.swift`, registered in `Info.plist`):
+- `voiceink://vocabulary/{add,remove,list}` -- vocabulary management
+- `voiceink://replacement/{add,remove,list}` -- word replacement management
+- `voiceink://recording/{toggle,dismiss,mode,style}` -- recording control
+- `voiceink://enhancement/{toggle,mode,prompt,screen,clipboard}` -- enhancement control
+- `voiceink://settings/{sound,mute,pause-media,text-formatting,filler-removal,vad,menu-bar-only,paste,language}` -- settings toggles
+- `voiceink://navigate/{dashboard,history,models,...,history-window}` -- UI navigation
+- `voiceink://status` -- status summary notification
+- Serves as CLI via `open "voiceink://..."` from any terminal
+
 ### Accessibility Identifiers
 
 `AccessibilityID.swift` contains centralized identifiers for XCUITest automation. Convention: `screen.elementType.specificName`. Applied via `.accessibilityIdentifier()` across all interactive views.
