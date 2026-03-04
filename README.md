@@ -1,3 +1,11 @@
+> **This is a personal fork of [Beingpax/VoiceInk](https://github.com/Beingpax/VoiceInk).**
+>
+> I use VoiceInk daily and have been making improvements based on my own preferences and workflow needs. This fork is public so the work is visible and available to the community. It is not intended to compete with or fragment the original project.
+>
+> The original author is welcome to pull any of these changes into the main repo at any time. I'm also happy to open PRs for individual features if that's preferred. If you're looking for the official VoiceInk release, please visit the [original repository](https://github.com/Beingpax/VoiceInk).
+
+---
+
 <div align="center">
   <img src="VoiceInk/Assets.xcassets/AppIcon.appiconset/256-mac.png" width="180" height="180" />
   <h1>VoiceInk</h1>
