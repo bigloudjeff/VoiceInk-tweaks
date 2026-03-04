@@ -246,7 +246,7 @@ class LocalModelManager {
      lastUpdateTime = currentTime
      lastProgressValue = currentProgress
 
-     DispatchQueue.main.async {
+     Task { @MainActor in
       self.downloadProgress[progressKey] = currentProgress
      }
     }

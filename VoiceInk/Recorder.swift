@@ -252,8 +252,7 @@ class Recorder: NSObject, ObservableObject {
  let newAudioMeter = AudioMeter(averagePower: Double(smoothedAverage), peakPower: Double(smoothedPeak))
  smoothedValuesLock.unlock()
 
- // Dispatch to main queue for UI updates (more efficient than Task)
- DispatchQueue.main.async { [weak self] in
+ Task { @MainActor [weak self] in
  guard let self = self else { return }
  if !self.hasDetectedAudioInCurrentSession && newAudioMeter.averagePower > 0.01 {
  self.hasDetectedAudioInCurrentSession = true

@@ -180,7 +180,7 @@ class AIEnhancementService: ObservableObject {
     }
 
     @objc private func handleAPIKeyChange() {
-        DispatchQueue.main.async {
+        Task { @MainActor in
             self.objectWillChange.send()
             if !self.aiService.isAPIKeyValid {
                 self.enhancementMode = .off

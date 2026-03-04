@@ -258,24 +258,25 @@ class TranscriptionOrchestrator {
     )
     recorder.restoreAudio()
    } else {
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+    Task { @MainActor in
+     try? await Task.sleep(for: .milliseconds(50))
      CursorPaster.pasteAtCursor(textToPaste + (CursorPaster.appendTrailingSpace ? " " : ""))
 
      let powerMode = PowerModeManager.shared
      if let activeConfig = powerMode.currentActiveConfiguration, activeConfig.isAutoSendEnabled {
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-       CursorPaster.pressEnter()
-      }
+      try? await Task.sleep(for: .milliseconds(200))
+      CursorPaster.pressEnter()
      }
     }
 
-    let audioRestoreDelay: TimeInterval
+    let audioRestoreDelay: UInt64
     if let activeConfig = PowerModeManager.shared.currentActiveConfiguration, activeConfig.isAutoSendEnabled {
-     audioRestoreDelay = 0.35
+     audioRestoreDelay = 350
     } else {
-     audioRestoreDelay = 0.15
+     audioRestoreDelay = 150
     }
-    DispatchQueue.main.asyncAfter(deadline: .now() + audioRestoreDelay) { [weak self] in
+    Task { @MainActor [weak self] in
+     try? await Task.sleep(for: .milliseconds(audioRestoreDelay))
      self?.recorder.restoreAudio()
     }
    }
