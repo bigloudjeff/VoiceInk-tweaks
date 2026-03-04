@@ -94,10 +94,11 @@ private struct RemoteAnnouncement: Decodable {
     let startAt: String?
     let endAt: String?
 
+    private static let iso8601Formatter = ISO8601DateFormatter()
+
     func isActive(at date: Date) -> Bool {
-        let formatter = ISO8601DateFormatter()
-        if let startAt = startAt, let start = formatter.date(from: startAt), date < start { return false }
-        if let endAt = endAt, let end = formatter.date(from: endAt), date > end { return false }
+        if let startAt = startAt, let start = Self.iso8601Formatter.date(from: startAt), date < start { return false }
+        if let endAt = endAt, let end = Self.iso8601Formatter.date(from: endAt), date > end { return false }
         return true
     }
 

@@ -9,6 +9,18 @@ final class LogExporter {
  private let maxSessionsToKeep = 3
  private let sessionsKey = UserDefaults.Keys.logExporterSessions
 
+ private static let logDateFormatter: DateFormatter = {
+  let formatter = DateFormatter()
+  formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+  return formatter
+ }()
+
+ private static let fileDateFormatter: DateFormatter = {
+  let formatter = DateFormatter()
+  formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+  return formatter
+ }()
+
  private(set) var sessionStartDates: [Date] = []
 
  private init() {
@@ -50,8 +62,7 @@ final class LogExporter {
  let predicate = NSPredicate(format: "subsystem == %@", subsystem)
 
  var logLines: [String] = []
- let dateFormatter = DateFormatter()
- dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+ let dateFormatter = Self.logDateFormatter
 
  logLines.append("=== VoiceInk Diagnostic Logs ===")
  logLines.append("Export Date: \(dateFormatter.string(from: Date()))")
@@ -131,9 +142,7 @@ final class LogExporter {
  }
 
  private func saveLogsToFile(_ logs: [String]) throws -> URL {
- let dateFormatter = DateFormatter()
- dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
- let timestamp = dateFormatter.string(from: Date())
+ let timestamp = Self.fileDateFormatter.string(from: Date())
  let fileName = "VoiceInk_Logs_\(timestamp).log"
 
  guard let downloadsURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first else {

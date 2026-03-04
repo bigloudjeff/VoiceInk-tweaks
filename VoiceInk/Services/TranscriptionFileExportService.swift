@@ -3,6 +3,12 @@ import AppKit
 
 class TranscriptionFileExportService {
 
+ private static let folderDateFormatter: DateFormatter = {
+  let formatter = DateFormatter()
+  formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+  return formatter
+ }()
+
  func exportAsFiles(_ transcriptions: [Transcription]) {
   guard !transcriptions.isEmpty else { return }
 
@@ -153,9 +159,7 @@ class TranscriptionFileExportService {
  // MARK: - Helpers
 
  private func buildFolderName(_ entry: CapturedEntry) -> String {
-  let formatter = DateFormatter()
-  formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
-  let dateStr = formatter.string(from: entry.timestamp)
+  let dateStr = Self.folderDateFormatter.string(from: entry.timestamp)
 
   let displayText = entry.enhancedText ?? entry.text
   let words = displayText.split(separator: " ").prefix(4).joined(separator: "_")

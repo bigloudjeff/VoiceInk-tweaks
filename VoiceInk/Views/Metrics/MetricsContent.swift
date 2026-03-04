@@ -307,15 +307,16 @@ struct MetricsContent: View {
         Int(Double(totalWords) * 5.0)
     }
     
-    private var dateFormatter: DateFormatter {
+}
+
+private enum Formatters {
+    static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter
-    }
-}
+    }()
 
-private enum Formatters {
     static let numberFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal

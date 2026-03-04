@@ -242,11 +242,12 @@ class ImportExportService {
                 do {
                     let jsonData = try Data(contentsOf: url)
                     let decoder = JSONDecoder()
+                    let iso8601Formatter = ISO8601DateFormatter()
                     decoder.dateDecodingStrategy = .custom { decoder in
                         let container = try decoder.singleValueContainer()
                         // Try ISO8601 string first (current export format)
                         if let dateString = try? container.decode(String.self),
-                           let date = ISO8601DateFormatter().date(from: dateString) {
+                           let date = iso8601Formatter.date(from: dateString) {
                             return date
                         }
                         // Fall back to seconds-since-epoch (older exports)
