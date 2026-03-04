@@ -106,5 +106,26 @@
    <result type="text" description="The result status."/>
   </command>
 
+  <command name="add vocabulary" code="VoIkAdVc" description="Add words to vocabulary.">
+   <cocoa class="VoiceInk.AddVocabularyCommand"/>
+   <direct-parameter type="text" description="Word or comma-separated words to add."/>
+   <parameter name="with hints" code="VcHn" type="text" optional="yes"
+    description="Phonetic hints for the word(s).">
+    <cocoa key="phoneticHints"/>
+   </parameter>
+   <result type="text" description="Confirmation message."/>
+  </command>
+
+  <command name="remove vocabulary" code="VoIkRmVc" description="Remove a word from vocabulary.">
+   <cocoa class="VoiceInk.RemoveVocabularyCommand"/>
+   <direct-parameter type="text" description="Word to remove."/>
+   <result type="text" description="Confirmation message."/>
+  </command>
+
+  <command name="list vocabulary" code="VoIkLsVc" description="List all vocabulary words.">
+   <cocoa class="VoiceInk.ListVocabularyCommand"/>
+   <result type="text" description="Comma-separated list of vocabulary words."/>
+  </command>
+
  </suite>
 </dictionary>

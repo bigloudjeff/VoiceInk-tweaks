@@ -64,6 +64,81 @@ class CustomVocabularyService {
         return unique
     }
 
+    /// Parse comma-separated input, check for duplicates, insert new words.
+    /// Returns lists of added words and skipped duplicates.
+    @MainActor
+    func addWords(_ input: String, phoneticHints: String? = nil, in container: ModelContainer) -> (added: [String], duplicates: [String]) {
+        let context = container.mainContext
+        let parts = input
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        guard !parts.isEmpty else { return ([], []) }
+
+        let existing = existingWords(from: context)
+        var added: [String] = []
+        var duplicates: [String] = []
+
+        for word in parts {
+            if existing.contains(word.lowercased()) {
+                duplicates.append(word)
+            } else {
+                let hints = phoneticHints?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                let entry = VocabularyWord(word: word, phoneticHints: hints)
+                context.insert(entry)
+                added.append(word)
+            }
+        }
+
+        if !added.isEmpty {
+            do {
+                try context.save()
+                NotificationCenter.default.post(name: .promptDidChange, object: nil)
+            } catch {
+                logger.error("Failed to save vocabulary words: \(error.localizedDescription, privacy: .public)")
+                // Rollback inserted words
+                context.rollback()
+                return ([], [])
+            }
+        }
+
+        return (added, duplicates)
+    }
+
+    /// Remove a word (case-insensitive match). Returns true if found and deleted.
+    @MainActor
+    func removeWord(_ word: String, from container: ModelContainer) -> Bool {
+        let context = container.mainContext
+        let trimmed = word.trimmingCharacters(in: .whitespacesAndNewlines)
+        let descriptor = FetchDescriptor<VocabularyWord>(sortBy: [SortDescriptor(\VocabularyWord.word)])
+        let items = context.safeFetch(descriptor, context: "remove vocabulary word", logger: logger)
+
+        guard let match = items.first(where: { $0.word.lowercased() == trimmed.lowercased() }) else {
+            return false
+        }
+
+        context.delete(match)
+        do {
+            try context.save()
+            NotificationCenter.default.post(name: .promptDidChange, object: nil)
+            return true
+        } catch {
+            logger.error("Failed to remove vocabulary word: \(error.localizedDescription, privacy: .public)")
+            context.rollback()
+            return false
+        }
+    }
+
+    /// List all vocabulary words sorted alphabetically.
+    @MainActor
+    func listWords(from container: ModelContainer) -> [String] {
+        let context = container.mainContext
+        let descriptor = FetchDescriptor<VocabularyWord>(sortBy: [SortDescriptor(\VocabularyWord.word)])
+        let items = context.safeFetch(descriptor, context: "list vocabulary words", logger: logger)
+        return items.map { $0.word }
+    }
+
     private func getCustomVocabularyWords(from context: ModelContext) -> [String]? {
         let descriptor = FetchDescriptor<VocabularyWord>(sortBy: [SortDescriptor(\VocabularyWord.word)])
         let items = context.safeFetch(descriptor, context: "custom vocabulary words", logger: logger)

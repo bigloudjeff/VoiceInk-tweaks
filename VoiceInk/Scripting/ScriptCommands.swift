@@ -220,3 +220,59 @@ class ShowHistoryCommand: NSScriptCommand {
   }
  }
 }
+
+class AddVocabularyCommand: NSScriptCommand {
+ override func performDefaultImplementation() -> Any? {
+  guard let input = directParameter as? String else {
+   return "Error: word parameter required"
+  }
+  return MainActor.assumeIsolated {
+   guard let container = AppServiceLocator.shared.modelContainer else {
+    return "Service not available"
+   }
+   let hints = evaluatedArguments?["phoneticHints"] as? String
+   let result = CustomVocabularyService.shared.addWords(input, phoneticHints: hints, in: container)
+   var parts: [String] = []
+   if !result.added.isEmpty {
+    parts.append("Added: \(result.added.joined(separator: ", "))")
+   }
+   if !result.duplicates.isEmpty {
+    parts.append("Already exists: \(result.duplicates.joined(separator: ", "))")
+   }
+   return parts.isEmpty ? "No words to add" : parts.joined(separator: ". ")
+  }
+ }
+}
+
+class RemoveVocabularyCommand: NSScriptCommand {
+ override func performDefaultImplementation() -> Any? {
+  guard let word = directParameter as? String else {
+   return "Error: word parameter required"
+  }
+  return MainActor.assumeIsolated {
+   guard let container = AppServiceLocator.shared.modelContainer else {
+    return "Service not available"
+   }
+   if CustomVocabularyService.shared.removeWord(word, from: container) {
+    return "Removed: \(word)"
+   } else {
+    return "Not found: \(word)"
+   }
+  }
+ }
+}
+
+class ListVocabularyCommand: NSScriptCommand {
+ override func performDefaultImplementation() -> Any? {
+  return MainActor.assumeIsolated {
+   guard let container = AppServiceLocator.shared.modelContainer else {
+    return "Service not available"
+   }
+   let words = CustomVocabularyService.shared.listWords(from: container)
+   if words.isEmpty {
+    return "No vocabulary words"
+   }
+   return words.joined(separator: ", ")
+  }
+ }
+}
