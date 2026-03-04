@@ -281,6 +281,7 @@ struct AudioTranscribeView: View {
         // Check if file exists
         guard FileManager.default.fileExists(atPath: url.path) else {
             Self.logger.error("File does not exist at path: \(url.path, privacy: .public)")
+            transcriptionManager.errorMessage = "This file could not be read. It may have been moved or deleted."
             return
         }
         
@@ -293,7 +294,10 @@ struct AudioTranscribeView: View {
         }
         
         // Validate file type
-        guard SupportedMedia.isSupported(url: url) else { return }
+        guard SupportedMedia.isSupported(url: url) else {
+            transcriptionManager.errorMessage = "Unsupported file format. Supported: WAV, MP3, M4A, AIFF, MP4, MOV, AAC, FLAC, CAF, AMR, OGG, OPUS, 3GP"
+            return
+        }
         
         Self.logger.notice("File validated successfully: \(url.lastPathComponent, privacy: .public)")
         selectedAudioURL = url

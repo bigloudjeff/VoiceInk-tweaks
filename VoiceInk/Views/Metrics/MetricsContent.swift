@@ -11,11 +11,14 @@ struct MetricsContent: View {
     @State private var totalWords: Int = 0
     @State private var totalDuration: TimeInterval = 0
     @State private var isLoadingMetrics: Bool = true
+    @State private var metricsLoadFailed: Bool = false
     @State private var metricsTask: Task<Void, Never>?
 
     var body: some View {
         Group {
-            if totalCount == 0 && !isLoadingMetrics {
+            if metricsLoadFailed {
+                metricsErrorView
+            } else if totalCount == 0 && !isLoadingMetrics {
                 emptyStateView
             } else if isLoadingMetrics {
                 ProgressView("Loading metrics...")
@@ -127,6 +130,7 @@ struct MetricsContent: View {
             logger.error("Error loading metrics: \(error.localizedDescription, privacy: .public)")
             await MainActor.run {
                 self.isLoadingMetrics = false
+                self.metricsLoadFailed = true
             }
         }
     }
@@ -144,7 +148,26 @@ struct MetricsContent: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(.windowBackgroundColor))
     }
-    
+
+    private var metricsErrorView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 56, weight: .semibold))
+                .foregroundColor(.secondary)
+            Text("Could Not Load Metrics")
+                .font(.title3.weight(.semibold))
+            Text("Something went wrong. Please try restarting VoiceInk.")
+                .foregroundColor(.secondary)
+            Button("Retry") {
+                metricsLoadFailed = false
+                isLoadingMetrics = true
+                metricsTask = Task { await loadMetricsEfficiently() }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.windowBackgroundColor))
+    }
+
     // MARK: - Sections
     
     private var heroSection: some View {
