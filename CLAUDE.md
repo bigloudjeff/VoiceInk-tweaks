@@ -133,4 +133,5 @@ VoiceInk exposes its features via three automation interfaces, all backed by sha
 ## Git Remotes
 
 - `origin` -- upstream (`Beingpax/VoiceInk.git`, read-only push access)
-- `private` -- fork (`bigloudjeff/VoiceInk.git`, push here)
+- `private` -- private staging repo (`bigloudjeff/VoiceInk-private.git`, push here first)
+- `fork` -- public fork (`bigloudjeff/VoiceInk-tweaks.git`, push here when ready to go public)

@@ -62,10 +62,27 @@ struct ContentView: View {
     @EnvironmentObject private var hotkeyManager: HotkeyManager
     @AppStorage(UserDefaults.Keys.powerModeUIFlag) private var powerModeUIFlag = false
     @State private var selectedView: ViewType? = .metrics
+    @State private var pendingView: ViewType?
+    @State private var showUnsavedChangesAlert = false
     @State private var searchText = ""
+    @ObservedObject private var powerModeManager = PowerModeManager.shared
     @FocusState private var searchFieldFocused: Bool
     let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
     @StateObject private var licenseViewModel = LicenseViewModel()
+
+    private var guardedSelection: Binding<ViewType?> {
+        Binding(
+            get: { selectedView },
+            set: { newValue in
+                if selectedView == .powerMode && powerModeManager.hasUnsavedEdits {
+                    pendingView = newValue
+                    showUnsavedChangesAlert = true
+                } else {
+                    selectedView = newValue
+                }
+            }
+        )
+    }
 
     private var visibleViewTypes: [ViewType] {
         ViewType.allCases.filter { viewType in
@@ -107,7 +124,7 @@ struct ContentView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 4)
 
-                List(selection: $selectedView) {
+                List(selection: guardedSelection) {
                     Section {
                         // App Header
                         HStack(spacing: 6) {
@@ -195,6 +212,23 @@ struct ContentView: View {
             if !searchText.isEmpty {
                 searchText = ""
             }
+        }
+        .alert("Unsaved Changes", isPresented: $showUnsavedChangesAlert) {
+            Button("Save") {
+                let destination = pendingView
+                pendingView = nil
+                NotificationCenter.default.post(name: .powerModeConfigSaveRequested, object: destination)
+            }
+            Button("Discard", role: .destructive) {
+                powerModeManager.hasUnsavedEdits = false
+                selectedView = pendingView
+                pendingView = nil
+            }
+            Button("Cancel", role: .cancel) {
+                pendingView = nil
+            }
+        } message: {
+            Text("You have unsaved Power Mode changes.")
         }
         .onReceive(NotificationCenter.default.publisher(for: .navigateToDestination)) { notification in
             if let destination = notification.userInfo?["destination"] as? String {

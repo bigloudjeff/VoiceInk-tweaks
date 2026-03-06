@@ -23,4 +23,5 @@ extension Notification.Name {
     static let audioDeviceChanged = Notification.Name("AudioDeviceChanged")
     static let powerModeConfigurationsDidChange = Notification.Name("PowerModeConfigurationsDidChange")
     static let customSoundsChanged = Notification.Name("CustomSoundsChanged")
+    static let powerModeConfigSaveRequested = Notification.Name("powerModeConfigSaveRequested")
 }

@@ -13,23 +13,26 @@ struct PowerModeConfig: Codable, Identifiable, Equatable {
     var selectedTranscriptionModelName: String?
     var selectedLanguage: String?
     var useScreenCapture: Bool
+    var useClipboardContext: Bool
     var selectedAIProvider: String?
     var selectedAIModel: String?
     var isAutoSendEnabled: Bool = false
+    var systemInstructions: String? = nil
     var isEnabled: Bool = true
     var isDefault: Bool = false
     var hotkeyShortcut: String? = nil
         
     enum CodingKeys: String, CodingKey {
-        case id, name, emoji, appConfigs, urlConfigs, isAIEnhancementEnabled, selectedPrompt, selectedLanguage, useScreenCapture, selectedAIProvider, selectedAIModel, isAutoSendEnabled, isEnabled, isDefault, hotkeyShortcut
+        case id, name, emoji, appConfigs, urlConfigs, isAIEnhancementEnabled, selectedPrompt, selectedLanguage, useScreenCapture, useClipboardContext, selectedAIProvider, selectedAIModel, isAutoSendEnabled, systemInstructions, isEnabled, isDefault, hotkeyShortcut
         case selectedWhisperModel
         case selectedTranscriptionModelName
     }
     
     init(id: UUID = UUID(), name: String, emoji: String, appConfigs: [AppConfig]? = nil,
          urlConfigs: [URLConfig]? = nil, isAIEnhancementEnabled: Bool, selectedPrompt: String? = nil,
-         selectedTranscriptionModelName: String? = nil, selectedLanguage: String? = nil, useScreenCapture: Bool = false,
-         selectedAIProvider: String? = nil, selectedAIModel: String? = nil, isAutoSendEnabled: Bool = false, isEnabled: Bool = true, isDefault: Bool = false, hotkeyShortcut: String? = nil) {
+         selectedTranscriptionModelName: String? = nil, selectedLanguage: String? = nil, useScreenCapture: Bool = false, useClipboardContext: Bool = false,
+         selectedAIProvider: String? = nil, selectedAIModel: String? = nil, isAutoSendEnabled: Bool = false,
+         systemInstructions: String? = nil, isEnabled: Bool = true, isDefault: Bool = false, hotkeyShortcut: String? = nil) {
         self.id = id
         self.name = name
         self.emoji = emoji
@@ -38,7 +41,9 @@ struct PowerModeConfig: Codable, Identifiable, Equatable {
         self.isAIEnhancementEnabled = isAIEnhancementEnabled
         self.selectedPrompt = selectedPrompt
         self.useScreenCapture = useScreenCapture
+        self.useClipboardContext = useClipboardContext
         self.isAutoSendEnabled = isAutoSendEnabled
+        self.systemInstructions = systemInstructions
         self.selectedAIProvider = selectedAIProvider ?? UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedAIProvider)
         self.selectedAIModel = selectedAIModel
         self.selectedTranscriptionModelName = selectedTranscriptionModelName ?? UserDefaults.standard.string(forKey: UserDefaults.Keys.currentTranscriptionModel)
@@ -59,9 +64,11 @@ struct PowerModeConfig: Codable, Identifiable, Equatable {
         selectedPrompt = try container.decodeIfPresent(String.self, forKey: .selectedPrompt)
         selectedLanguage = try container.decodeIfPresent(String.self, forKey: .selectedLanguage)
         useScreenCapture = try container.decode(Bool.self, forKey: .useScreenCapture)
+        useClipboardContext = try container.decodeIfPresent(Bool.self, forKey: .useClipboardContext) ?? false
         selectedAIProvider = try container.decodeIfPresent(String.self, forKey: .selectedAIProvider)
         selectedAIModel = try container.decodeIfPresent(String.self, forKey: .selectedAIModel)
         isAutoSendEnabled = try container.decodeIfPresent(Bool.self, forKey: .isAutoSendEnabled) ?? false
+        systemInstructions = try container.decodeIfPresent(String.self, forKey: .systemInstructions)
         isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
         isDefault = try container.decodeIfPresent(Bool.self, forKey: .isDefault) ?? false
         hotkeyShortcut = try container.decodeIfPresent(String.self, forKey: .hotkeyShortcut)
@@ -86,9 +93,11 @@ struct PowerModeConfig: Codable, Identifiable, Equatable {
         try container.encodeIfPresent(selectedPrompt, forKey: .selectedPrompt)
         try container.encodeIfPresent(selectedLanguage, forKey: .selectedLanguage)
         try container.encode(useScreenCapture, forKey: .useScreenCapture)
+        try container.encode(useClipboardContext, forKey: .useClipboardContext)
         try container.encodeIfPresent(selectedAIProvider, forKey: .selectedAIProvider)
         try container.encodeIfPresent(selectedAIModel, forKey: .selectedAIModel)
         try container.encode(isAutoSendEnabled, forKey: .isAutoSendEnabled)
+        try container.encodeIfPresent(systemInstructions, forKey: .systemInstructions)
         try container.encodeIfPresent(selectedTranscriptionModelName, forKey: .selectedTranscriptionModelName)
         try container.encode(isEnabled, forKey: .isEnabled)
         try container.encode(isDefault, forKey: .isDefault)
@@ -136,6 +145,8 @@ class PowerModeManager: ObservableObject, PowerModeProviding {
     private let logger = Logger(subsystem: "com.prakashjoshipax.voiceink", category: "PowerModeManager")
     @Published var configurations: [PowerModeConfig] = []
     @Published var activeConfiguration: PowerModeConfig?
+    /// Set to true when a Power Mode config is being edited with unsaved changes.
+    @Published var hasUnsavedEdits = false
 
     private let configKey = UserDefaults.Keys.powerModeConfigurations
     private let activeConfigIdKey = UserDefaults.Keys.activeConfigurationId

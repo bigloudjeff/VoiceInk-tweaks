@@ -221,7 +221,7 @@ struct MenuBarView: View {
             .keyboardShortcut("h", modifiers: [.command, .shift])
             
             Button("Settings") {
-                menuBarManager.openMainWindowAndNavigate(to: "Settings")
+                menuBarManager.focusMainWindow()
             }
             .accessibilityIdentifier(AccessibilityID.MenuBar.buttonSettings)
             .keyboardShortcut(",", modifiers: .command)

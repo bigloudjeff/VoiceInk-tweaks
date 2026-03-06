@@ -27,8 +27,15 @@ enum AIPrompts {
      </SYSTEM_INSTRUCTIONS>
      """
 
+ /// Temporary Power Mode override for system instructions.
+ /// When set, takes precedence over the global template.
+ static var powerModeOverride: String?
+
  static var customPromptTemplate: String {
-  UserDefaults.standard.string(forKey: UserDefaults.Keys.systemInstructionsTemplate) ?? defaultSystemInstructions
+  if let override = powerModeOverride {
+   return override
+  }
+  return UserDefaults.standard.string(forKey: UserDefaults.Keys.systemInstructionsTemplate) ?? defaultSystemInstructions
  }
 
  static func saveSystemInstructions(_ text: String) {

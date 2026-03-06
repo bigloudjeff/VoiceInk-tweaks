@@ -5,6 +5,7 @@ import os
 struct ApplicationState: Codable {
     var enhancementMode: String
     var useScreenCaptureContext: Bool
+    var useClipboardContext: Bool
     var selectedPromptId: String?
     var selectedAIProvider: String?
     var selectedAIModel: String?
@@ -22,30 +23,39 @@ struct ApplicationState: Codable {
             self.enhancementMode = wasEnabled ? EnhancementMode.on.rawValue : EnhancementMode.off.rawValue
         }
         self.useScreenCaptureContext = try container.decode(Bool.self, forKey: .useScreenCaptureContext)
+        self.useClipboardContext = try container.decodeIfPresent(Bool.self, forKey: .useClipboardContext) ?? false
         self.selectedPromptId = try container.decodeIfPresent(String.self, forKey: .selectedPromptId)
         self.selectedAIProvider = try container.decodeIfPresent(String.self, forKey: .selectedAIProvider)
         self.selectedAIModel = try container.decodeIfPresent(String.self, forKey: .selectedAIModel)
         self.selectedLanguage = try container.decodeIfPresent(String.self, forKey: .selectedLanguage)
         self.transcriptionModelName = try container.decodeIfPresent(String.self, forKey: .transcriptionModelName)
+        self.systemInstructions = try container.decodeIfPresent(String.self, forKey: .systemInstructions)
     }
 
-    init(enhancementMode: String, useScreenCaptureContext: Bool, selectedPromptId: String? = nil,
+    var systemInstructions: String?
+
+    init(enhancementMode: String, useScreenCaptureContext: Bool, useClipboardContext: Bool = false,
+         selectedPromptId: String? = nil,
          selectedAIProvider: String? = nil, selectedAIModel: String? = nil,
-         selectedLanguage: String? = nil, transcriptionModelName: String? = nil) {
+         selectedLanguage: String? = nil, transcriptionModelName: String? = nil,
+         systemInstructions: String? = nil) {
         self.enhancementMode = enhancementMode
         self.useScreenCaptureContext = useScreenCaptureContext
+        self.useClipboardContext = useClipboardContext
         self.selectedPromptId = selectedPromptId
         self.selectedAIProvider = selectedAIProvider
         self.selectedAIModel = selectedAIModel
         self.selectedLanguage = selectedLanguage
         self.transcriptionModelName = transcriptionModelName
+        self.systemInstructions = systemInstructions
     }
 
     private enum CodingKeys: String, CodingKey {
         // Use the old key name for backward-compatible decoding
         case enhancementMode = "isEnhancementEnabled"
-        case useScreenCaptureContext, selectedPromptId, selectedAIProvider
+        case useScreenCaptureContext, useClipboardContext, selectedPromptId, selectedAIProvider
         case selectedAIModel, selectedLanguage, transcriptionModelName
+        case systemInstructions
     }
 }
 
@@ -85,11 +95,13 @@ class PowerModeSessionManager {
             let originalState = ApplicationState(
                 enhancementMode: enhancementService.enhancementMode.rawValue,
                 useScreenCaptureContext: enhancementService.useScreenCaptureContext,
+                useClipboardContext: enhancementService.useClipboardContext,
                 selectedPromptId: enhancementService.selectedPromptId?.uuidString,
                 selectedAIProvider: enhancementService.getAIService()?.selectedProvider.rawValue,
                 selectedAIModel: enhancementService.getAIService()?.currentModel,
                 selectedLanguage: UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage),
-                transcriptionModelName: whisperState.currentTranscriptionModel?.name
+                transcriptionModelName: whisperState.currentTranscriptionModel?.name,
+                systemInstructions: AIPrompts.powerModeOverride
             )
 
             let newSession = PowerModeSession(
@@ -132,11 +144,13 @@ class PowerModeSessionManager {
         let updatedState = ApplicationState(
             enhancementMode: enhancementService.enhancementMode.rawValue,
             useScreenCaptureContext: enhancementService.useScreenCaptureContext,
+            useClipboardContext: enhancementService.useClipboardContext,
             selectedPromptId: enhancementService.selectedPromptId?.uuidString,
             selectedAIProvider: enhancementService.getAIService()?.selectedProvider.rawValue,
             selectedAIModel: enhancementService.getAIService()?.currentModel,
             selectedLanguage: UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage),
-            transcriptionModelName: whisperState.currentTranscriptionModel?.name
+            transcriptionModelName: whisperState.currentTranscriptionModel?.name,
+            systemInstructions: AIPrompts.powerModeOverride
         )
         
         session.originalState = updatedState
@@ -155,6 +169,10 @@ class PowerModeSessionManager {
                 enhancementService.enhancementMode = .on
             }
             enhancementService.useScreenCaptureContext = config.useScreenCapture
+            enhancementService.useClipboardContext = config.useClipboardContext
+
+            // Apply system instructions override if configured
+            AIPrompts.powerModeOverride = config.systemInstructions
 
             if config.isAIEnhancementEnabled {
                 if let promptId = config.selectedPrompt, let uuid = UUID(uuidString: promptId) {
@@ -195,7 +213,11 @@ class PowerModeSessionManager {
         await MainActor.run {
             enhancementService.enhancementMode = EnhancementMode(rawValue: state.enhancementMode) ?? .off
             enhancementService.useScreenCaptureContext = state.useScreenCaptureContext
+            enhancementService.useClipboardContext = state.useClipboardContext
             enhancementService.selectedPromptId = state.selectedPromptId.flatMap(UUID.init)
+
+            // Restore system instructions (nil clears the override)
+            AIPrompts.powerModeOverride = state.systemInstructions
 
             if let aiService = enhancementService.getAIService() {
                 if let providerName = state.selectedAIProvider, let provider = AIProvider(rawValue: providerName) {

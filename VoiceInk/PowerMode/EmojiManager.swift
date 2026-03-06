@@ -3,7 +3,7 @@ import Foundation
 class EmojiManager: ObservableObject {
  static let shared = EmojiManager()
  
- private let defaultEmojis = ["", "", "", "", "", "", "", "", "️", "", "", "️", "", "", "", "", "", "", "", ""]
+ private let defaultEmojis = ["\u{1F680}", "\u{2728}", "\u{1F4BB}", "\u{1F3AF}", "\u{1F4DD}", "\u{1F916}", "\u{26A1}", "\u{1F525}", "\u{2764}\u{FE0F}", "\u{1F4A1}", "\u{1F30D}", "\u{2699}\u{FE0F}", "\u{1F4DA}", "\u{1F3A8}", "\u{1F4AC}", "\u{1F50D}", "\u{1F4E7}", "\u{1F4C8}", "\u{1F3C6}", "\u{1F389}"]
  private let customEmojisKey = UserDefaults.Keys.customEmojis
  
  @Published var customEmojis: [String] = []

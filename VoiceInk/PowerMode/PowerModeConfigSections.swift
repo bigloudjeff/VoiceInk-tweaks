@@ -197,8 +197,12 @@ struct PowerModeAIEnhancementSection: View {
  @Binding var selectedAIModel: String?
  @Binding var selectedPromptId: UUID?
  @Binding var useScreenCapture: Bool
+ @Binding var useClipboardContext: Bool
+ @Binding var systemInstructions: String?
  @EnvironmentObject var enhancementService: AIEnhancementService
  @EnvironmentObject var aiService: AIService
+ @State private var isSystemInstructionsExpanded = false
+ @State private var instructionsText = ""
 
  var body: some View {
   Section("AI Enhancement") {
@@ -304,8 +308,59 @@ struct PowerModeAIEnhancementSection: View {
      }
     }
 
-    Toggle("Context Awareness", isOn: $useScreenCapture)
+    Toggle("Screen Context", isOn: $useScreenCapture)
      .accessibilityIdentifier(AccessibilityID.PowerModeConfig.toggleContextAwareness)
+
+    Toggle("Clipboard Context", isOn: $useClipboardContext)
+
+    DisclosureGroup("System Instructions", isExpanded: $isSystemInstructionsExpanded) {
+     VStack(alignment: .leading, spacing: 8) {
+      Toggle("Override global system instructions", isOn: Binding(
+       get: { systemInstructions != nil },
+       set: { enabled in
+        if enabled {
+         instructionsText = AIPrompts.customPromptTemplate
+         systemInstructions = instructionsText
+        } else {
+         systemInstructions = nil
+         instructionsText = ""
+        }
+       }
+      ))
+
+      if systemInstructions != nil {
+       Text("Custom system instructions for this Power Mode. The `%@` placeholder is where the selected prompt's rules get inserted.")
+        .font(.caption)
+        .foregroundColor(.secondary)
+
+       TextEditor(text: $instructionsText)
+        .font(.system(.body, design: .monospaced))
+        .frame(minHeight: 200)
+        .padding(4)
+        .background(Color(NSColor.textBackgroundColor))
+        .cornerRadius(8)
+        .overlay(
+         RoundedRectangle(cornerRadius: 8)
+          .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+        )
+        .onChange(of: instructionsText) { _, newValue in
+         systemInstructions = newValue
+        }
+
+       Button("Reset to Global Default") {
+        instructionsText = AIPrompts.customPromptTemplate
+        systemInstructions = instructionsText
+       }
+       .font(.caption)
+      }
+     }
+    }
+    .onAppear {
+     if let instructions = systemInstructions {
+      instructionsText = instructions
+      isSystemInstructionsExpanded = true
+     }
+    }
    }
   }
  }
