@@ -24,7 +24,26 @@ struct APIKeyManagementView: View {
                 .pickerStyle(.automatic)
                 .tint(.blue)
                 
-                if aiService.isAPIKeyValid && aiService.selectedProvider != .ollama {
+                if aiService.selectedProvider == .appleIntelligence {
+                    Spacer()
+                    if #available(macOS 26.0, *), AppleIntelligenceService.shared.isAvailable {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 8, height: 8)
+                            .accessibilityLabel("Apple Intelligence available")
+                        Text("Available")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Circle()
+                            .fill(Color.red)
+                            .frame(width: 8, height: 8)
+                            .accessibilityLabel("Apple Intelligence unavailable")
+                        Text("Unavailable")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                } else if aiService.isAPIKeyValid && aiService.selectedProvider != .ollama {
                     Spacer()
                     Circle()
                         .fill(Color.green)
@@ -105,7 +124,8 @@ struct APIKeyManagementView: View {
                     
                 } else if !aiService.availableModels.isEmpty &&
                             aiService.selectedProvider != .ollama &&
-                            aiService.selectedProvider != .custom {
+                            aiService.selectedProvider != .custom &&
+                            aiService.selectedProvider != .appleIntelligence {
                     Picker("Model", selection: Binding(
                         get: { aiService.currentModel },
                         set: { aiService.selectModel($0) }
@@ -157,6 +177,22 @@ struct APIKeyManagementView: View {
                         .onChange(of: selectedOllamaModel) { oldValue, newValue in
                             aiService.updateSelectedOllamaModel(newValue)
                         }
+                    }
+
+                } else if aiService.selectedProvider == .appleIntelligence {
+                    if #available(macOS 26.0, *) {
+                        HStack {
+                            Image(systemName: "apple.intelligence")
+                                .foregroundColor(.secondary)
+                            Text(AppleIntelligenceService.shared.availabilityDescription)
+                                .foregroundColor(.secondary)
+                        }
+                        Text("Uses the on-device Apple Intelligence model. No API key required.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("Apple Intelligence requires macOS 26.0 or later.")
+                            .foregroundColor(.secondary)
                     }
 
                 } else if aiService.selectedProvider == .custom {

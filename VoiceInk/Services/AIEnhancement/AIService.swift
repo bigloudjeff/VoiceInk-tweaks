@@ -13,6 +13,7 @@ enum AIProvider: String, CaseIterable {
     case elevenLabs = "ElevenLabs"
     case deepgram = "Deepgram"
     case soniox = "Soniox"
+    case appleIntelligence = "Apple Intelligence"
     case ollama = "Ollama"
     case custom = "Custom"
     
@@ -39,6 +40,8 @@ enum AIProvider: String, CaseIterable {
             return "https://api.deepgram.com/v1/listen"
         case .soniox:
             return "https://api.soniox.com/v1"
+        case .appleIntelligence:
+            return ""
         case .ollama:
             return UserDefaults.standard.string(forKey: UserDefaults.Keys.ollamaBaseURL) ?? "http://localhost:11434"
         case .custom:
@@ -66,6 +69,8 @@ enum AIProvider: String, CaseIterable {
             return "whisper-1"
         case .soniox:
             return "stt-async-v4"
+        case .appleIntelligence:
+            return "on-device"
         case .ollama:
             return UserDefaults.standard.string(forKey: UserDefaults.Keys.ollamaSelectedModel) ?? "mistral"
         case .custom:
@@ -133,6 +138,8 @@ enum AIProvider: String, CaseIterable {
             return ["whisper-1"]
         case .soniox:
             return ["stt-async-v4"]
+        case .appleIntelligence:
+            return ["on-device"]
         case .ollama:
             return []
         case .custom:
@@ -144,7 +151,7 @@ enum AIProvider: String, CaseIterable {
     
     var requiresAPIKey: Bool {
         switch self {
-        case .ollama:
+        case .ollama, .appleIntelligence:
             return false
         default:
             return true
@@ -199,7 +206,12 @@ class AIService: ObservableObject {
     
     var connectedProviders: [AIProvider] {
         AIProvider.allCases.filter { provider in
-            if provider == .ollama {
+            if provider == .appleIntelligence {
+                if #available(macOS 26.0, *) {
+                    return AppleIntelligenceService.shared.isAvailable
+                }
+                return false
+            } else if provider == .ollama {
                 return ollamaService.isConnected
             } else if provider.requiresAPIKey {
                 return APIKeyManager.shared.hasAPIKey(forProvider: provider.rawValue)

@@ -284,6 +284,19 @@ class AIEnhancementService: ObservableObject {
             self.lastUserMessageSent = formattedText
         }
 
+        if aiService.selectedProvider == .appleIntelligence {
+            if #available(macOS 26.0, *) {
+                do {
+                    let result = try await AppleIntelligenceService.shared.enhance(text: formattedText, systemPrompt: systemMessage)
+                    return AIEnhancementOutputFilter.filter(result)
+                } catch {
+                    throw EnhancementError.customError(error.localizedDescription)
+                }
+            } else {
+                throw EnhancementError.customError("Apple Intelligence requires macOS 26.0 or later.")
+            }
+        }
+
         if aiService.selectedProvider == .ollama {
             do {
                 let result = try await aiService.enhanceWithOllama(text: formattedText, systemPrompt: systemMessage)
@@ -419,6 +432,19 @@ class AIEnhancementService: ObservableObject {
     }
 
     static func performEnhancementRequest(userMessage: String, systemMessage: String, aiService: AIService, baseTimeout: TimeInterval = 30) async throws -> String {
+        if aiService.selectedProvider == .appleIntelligence {
+            if #available(macOS 26.0, *) {
+                do {
+                    let result = try await AppleIntelligenceService.shared.enhance(text: userMessage, systemPrompt: systemMessage)
+                    return AIEnhancementOutputFilter.filter(result)
+                } catch {
+                    throw EnhancementError.customError(error.localizedDescription)
+                }
+            } else {
+                throw EnhancementError.customError("Apple Intelligence requires macOS 26.0 or later.")
+            }
+        }
+
         if aiService.selectedProvider == .ollama {
             do {
                 let result = try await aiService.enhanceWithOllama(text: userMessage, systemPrompt: systemMessage)
