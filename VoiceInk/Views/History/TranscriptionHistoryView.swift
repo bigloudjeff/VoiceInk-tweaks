@@ -23,8 +23,10 @@ struct TranscriptionHistoryView: View {
     @State private var lastTimestamp: Date?
     @State private var selectedPowerMode: String? = nil
     @State private var selectedModelName: String? = nil
+    @State private var selectedTargetApp: String? = nil
     @State private var availablePowerModes: [String] = []
     @State private var availableModelNames: [String] = []
+    @State private var availableTargetApps: [String] = []
 
     private let exportService = VoiceInkCSVExportService()
     private let fileExportService = TranscriptionFileExportService()
@@ -35,6 +37,7 @@ struct TranscriptionHistoryView: View {
     private func matchesActiveFilters(_ t: Transcription) -> Bool {
         if let mode = selectedPowerMode, t.powerModeName != mode { return false }
         if let model = selectedModelName, t.transcriptionModelName != model { return false }
+        if let app = selectedTargetApp, t.targetAppName != app { return false }
         return true
     }
 
@@ -225,7 +228,7 @@ struct TranscriptionHistoryView: View {
             )
             .padding(12)
 
-            if !availablePowerModes.isEmpty || !availableModelNames.isEmpty {
+            if !availablePowerModes.isEmpty || !availableModelNames.isEmpty || !availableTargetApps.isEmpty {
                 HStack(spacing: 6) {
                     if !availablePowerModes.isEmpty {
                         HistoryFilterMenu(
@@ -247,10 +250,21 @@ struct TranscriptionHistoryView: View {
                         )
                     }
 
-                    if selectedPowerMode != nil || selectedModelName != nil {
+                    if !availableTargetApps.isEmpty {
+                        HistoryFilterMenu(
+                            selection: $selectedTargetApp,
+                            options: availableTargetApps,
+                            placeholder: "App",
+                            allLabel: "All Apps",
+                            accessibilityId: "history_menu_target_app_filter"
+                        )
+                    }
+
+                    if selectedPowerMode != nil || selectedModelName != nil || selectedTargetApp != nil {
                         Button {
                             selectedPowerMode = nil
                             selectedModelName = nil
+                            selectedTargetApp = nil
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 12))
@@ -271,7 +285,7 @@ struct TranscriptionHistoryView: View {
 
             ZStack(alignment: .bottom) {
                 if filteredTranscriptions.isEmpty && !isLoading {
-                    if hasMoreContent && (selectedPowerMode != nil || selectedModelName != nil) {
+                    if hasMoreContent && (selectedPowerMode != nil || selectedModelName != nil || selectedTargetApp != nil) {
                         VStack(spacing: 12) {
                             ProgressView().controlSize(.small)
                             Text("Searching...")
@@ -556,17 +570,21 @@ struct TranscriptionHistoryView: View {
         isLoading = false
         availablePowerModes = []
         availableModelNames = []
+        availableTargetApps = []
     }
 
     private func updateAvailableFilterOptions() {
         var modes = Set(availablePowerModes)
         var models = Set(availableModelNames)
+        var apps = Set(availableTargetApps)
         for t in displayedTranscriptions {
             if let m = t.powerModeName, !m.isEmpty { modes.insert(m) }
             if let m = t.transcriptionModelName, !m.isEmpty { models.insert(m) }
+            if let a = t.targetAppName, !a.isEmpty { apps.insert(a) }
         }
         availablePowerModes = modes.sorted()
         availableModelNames = models.sorted()
+        availableTargetApps = apps.sorted()
     }
 
     private func performDeletion(for transcription: Transcription) {

@@ -95,6 +95,7 @@ class EnhancementQueueService {
                 transcription.promptName = job.promptName
                 transcription.aiRequestSystemMessage = job.systemMessage
                 transcription.aiRequestUserMessage = job.userMessage
+                transcription.enhancementSource = "background"
                 try context.save()
 
                 logger.notice("Background enhancement completed for \(transcriptionId.uuidString, privacy: .public) in \(duration, privacy: .public)s")

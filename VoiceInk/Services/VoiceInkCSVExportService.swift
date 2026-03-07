@@ -26,21 +26,23 @@ class VoiceInkCSVExportService {
     }
     
     private func generateCSV(for transcriptions: [Transcription]) -> String {
-        var csvString = "Original Transcript,Enhanced Transcript,Enhancement Model,Prompt Name,Transcription Model,Power Mode,Enhancement Time,Transcription Time,Timestamp,Duration\n"
+        var csvString = "Original Transcript,Enhanced Transcript,Enhancement Model,Enhancement Mode,Prompt Name,Transcription Model,Target App,Power Mode,Enhancement Time,Transcription Time,Timestamp,Duration\n"
 
         for transcription in transcriptions {
             let originalText = escapeCSVString(transcription.text)
             let enhancedText = escapeCSVString(transcription.enhancedText ?? "")
             let enhancementModel = escapeCSVString(transcription.aiEnhancementModelName ?? "")
+            let enhancementMode = escapeCSVString(transcription.enhancementSource ?? "")
             let promptName = escapeCSVString(transcription.promptName ?? "")
             let transcriptionModel = escapeCSVString(transcription.transcriptionModelName ?? "")
+            let targetApp = escapeCSVString(transcription.targetAppName ?? "")
             let powerMode = escapeCSVString(powerModeDisplay(name: transcription.powerModeName, emoji: transcription.powerModeEmoji))
             let enhancementTime = transcription.enhancementDuration ?? 0
             let transcriptionTime = transcription.transcriptionDuration ?? 0
             let timestamp = transcription.timestamp.ISO8601Format()
             let duration = transcription.duration
 
-            let row = "\(originalText),\(enhancedText),\(enhancementModel),\(promptName),\(transcriptionModel),\(powerMode),\(enhancementTime),\(transcriptionTime),\(timestamp),\(duration)\n"
+            let row = "\(originalText),\(enhancedText),\(enhancementModel),\(enhancementMode),\(promptName),\(transcriptionModel),\(targetApp),\(powerMode),\(enhancementTime),\(transcriptionTime),\(timestamp),\(duration)\n"
             csvString.append(row)
         }
 

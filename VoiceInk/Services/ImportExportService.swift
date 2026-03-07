@@ -54,6 +54,11 @@ struct TranscriptionExportData: Codable {
     let powerModeEmoji: String?
     let transcriptionStatus: String?
     let isPinned: Bool?
+    let enhancementSource: String?
+    let sttPrompt: String?
+    let extractedVocabulary: String?
+    let targetAppName: String?
+    let targetAppBundleId: String?
 }
 
 struct VoiceInkExportedSettings: Codable {
@@ -145,7 +150,12 @@ class ImportExportService {
                     powerModeName: t.powerModeName,
                     powerModeEmoji: t.powerModeEmoji,
                     transcriptionStatus: t.transcriptionStatus,
-                    isPinned: t.isPinned
+                    isPinned: t.isPinned,
+                    enhancementSource: t.enhancementSource,
+                    sttPrompt: t.sttPrompt,
+                    extractedVocabulary: t.extractedVocabulary,
+                    targetAppName: t.targetAppName,
+                    targetAppBundleId: t.targetAppBundleId
                 )
             }
         }
@@ -367,6 +377,11 @@ class ImportExportService {
                             transcription.id = data.id
                             transcription.timestamp = data.timestamp
                             transcription.isPinned = data.isPinned ?? false
+                            transcription.enhancementSource = data.enhancementSource
+                            transcription.sttPrompt = data.sttPrompt
+                            transcription.extractedVocabulary = data.extractedVocabulary
+                            transcription.targetAppName = data.targetAppName
+                            transcription.targetAppBundleId = data.targetAppBundleId
                             whisperState.modelContext.insert(transcription)
                             importedCount += 1
                         }

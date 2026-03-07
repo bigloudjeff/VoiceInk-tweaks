@@ -26,6 +26,11 @@ final class Transcription {
     var powerModeEmoji: String?
     var transcriptionStatus: String?
     var isPinned: Bool = false
+    var enhancementSource: String?
+    var sttPrompt: String?
+    var extractedVocabulary: String?
+    var targetAppName: String?
+    var targetAppBundleId: String?
 
     init(text: String,
          duration: TimeInterval,

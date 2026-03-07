@@ -138,6 +138,20 @@ class TranscriptionOrchestrator {
    transcription.transcriptionDuration = transcriptionDuration
    transcription.powerModeName = powerModeName
    transcription.powerModeEmoji = powerModeEmoji
+
+   // Capture the target app that was frontmost when recording started
+   if let frontApp = ActiveWindowService.shared.currentApplication {
+    transcription.targetAppName = frontApp.localizedName
+    transcription.targetAppBundleId = frontApp.bundleIdentifier
+   }
+
+   // Capture the STT prompt that was sent to the transcription model
+   let basePrompt = UserDefaults.standard.string(forKey: UserDefaults.Keys.transcriptionPrompt) ?? ""
+   let vocabString = CustomVocabularyService.shared.getTranscriptionVocabulary(from: modelContext)
+   let fullSttPrompt = vocabString.isEmpty ? basePrompt : basePrompt + " " + vocabString
+   if !fullSttPrompt.isEmpty {
+    transcription.sttPrompt = fullSttPrompt
+   }
    finalPastedText = text
 
    if let enhancementService = enhancementService, enhancementService.isConfigured {
@@ -176,6 +190,7 @@ class TranscriptionOrchestrator {
       transcription.aiEnhancementModelName = enhancementService.getAIService()?.currentModel
       transcription.promptName = promptName
       transcription.enhancementDuration = enhancementDuration
+      transcription.enhancementSource = "synchronous"
       transcription.aiRequestSystemMessage = enhancementService.lastSystemMessageSent
       transcription.aiRequestUserMessage = enhancementService.lastUserMessageSent
       finalPastedText = enhancedText

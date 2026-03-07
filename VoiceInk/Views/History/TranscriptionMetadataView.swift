@@ -86,6 +86,15 @@ struct TranscriptionMetadataView: View {
                             value: aiModel
                         )
 
+                        if let source = transcription.enhancementSource {
+                            Divider()
+                            metadataRow(
+                                icon: source == "background" ? "arrow.triangle.2.circlepath" : "bolt.fill",
+                                label: "Enhancement Mode",
+                                value: source == "background" ? "Post Processing" : "Synchronous"
+                            )
+                        }
+
                         if let duration = transcription.enhancementDuration {
                             Divider()
                             metadataRow(
@@ -102,6 +111,15 @@ struct TranscriptionMetadataView: View {
                             icon: "text.bubble.fill",
                             label: "Prompt",
                             value: promptName
+                        )
+                    }
+
+                    if let appName = transcription.targetAppName, !appName.isEmpty {
+                        Divider()
+                        metadataRow(
+                            icon: "app.fill",
+                            label: "Target App",
+                            value: appName
                         )
                     }
 
@@ -191,6 +209,58 @@ struct TranscriptionMetadataView: View {
                         .fill(.thinMaterial)
                 )
                 .accessibilityIdentifier(AccessibilityID.History.buttonExportEntry)
+
+                if let sttPrompt = transcription.sttPrompt, !sttPrompt.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("STT Prompt")
+                            .font(.system(size: 14, weight: .semibold))
+
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Sent to transcription model")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(.secondary)
+                                Text(sttPrompt)
+                                    .font(.system(size: 11, weight: .regular, design: .monospaced))
+                                    .lineSpacing(2)
+                                    .textSelection(.enabled)
+                                    .foregroundColor(.primary)
+                            }
+                            .padding(14)
+                        }
+                        .frame(minHeight: 60, maxHeight: 200)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(.thinMaterial)
+                        )
+                    }
+                }
+
+                if let extractedVocab = transcription.extractedVocabulary, !extractedVocab.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Extracted Vocabulary")
+                            .font(.system(size: 14, weight: .semibold))
+
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Corrections found by comparing raw and enhanced text")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(.secondary)
+                                Text(extractedVocab)
+                                    .font(.system(size: 11, weight: .regular, design: .monospaced))
+                                    .lineSpacing(2)
+                                    .textSelection(.enabled)
+                                    .foregroundColor(.primary)
+                            }
+                            .padding(14)
+                        }
+                        .frame(minHeight: 60, maxHeight: 200)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(.thinMaterial)
+                        )
+                    }
+                }
 
                 if transcription.aiRequestSystemMessage != nil || transcription.aiRequestUserMessage != nil {
                     VStack(alignment: .leading, spacing: 12) {

@@ -31,7 +31,12 @@ class TranscriptionFileExportService {
     powerModeName: t.powerModeName,
     powerModeEmoji: t.powerModeEmoji,
     transcriptionStatus: t.transcriptionStatus,
-    isPinned: t.isPinned
+    isPinned: t.isPinned,
+    enhancementSource: t.enhancementSource,
+    sttPrompt: t.sttPrompt,
+    extractedVocabulary: t.extractedVocabulary,
+    targetAppName: t.targetAppName,
+    targetAppBundleId: t.targetAppBundleId
    )
   }
 
@@ -107,6 +112,15 @@ class TranscriptionFileExportService {
   }
   if let status = entry.transcriptionStatus {
    lines.append("status: \(status)")
+  }
+  if let source = entry.enhancementSource {
+   lines.append("enhancement_source: \(source)")
+  }
+  if let app = entry.targetAppName {
+   lines.append("target_app: \(yamlEscape(app))")
+  }
+  if let bundleId = entry.targetAppBundleId {
+   lines.append("target_app_bundle_id: \(bundleId)")
   }
 
   let yaml = lines.joined(separator: "\n") + "\n"
@@ -199,4 +213,9 @@ private struct CapturedEntry {
  let powerModeEmoji: String?
  let transcriptionStatus: String?
  let isPinned: Bool
+ let enhancementSource: String?
+ let sttPrompt: String?
+ let extractedVocabulary: String?
+ let targetAppName: String?
+ let targetAppBundleId: String?
 }

@@ -97,6 +97,7 @@ class VocabularySuggestionService: NSObject {
    }
 
    var didInsertOrUpdate = false
+   var extractedEntries: [String] = []
 
    for candidate in candidates {
     // Skip if already in vocabulary
@@ -111,6 +112,7 @@ class VocabularySuggestionService: NSObject {
       if merged != vocabWord.phoneticHints {
        vocabWord.phoneticHints = merged
        didInsertOrUpdate = true
+       extractedEntries.append("\(candidate.rawPhrase) -> \(candidate.correctedPhrase) (phonetic hint)")
       }
      }
      continue
@@ -128,14 +130,33 @@ class VocabularySuggestionService: NSObject {
      existing.occurrenceCount += 1
      existing.dateLastSeen = Date()
      didInsertOrUpdate = true
+     extractedEntries.append("\(candidate.rawPhrase) -> \(candidate.correctedPhrase)")
     } else {
      let suggestion = VocabularySuggestion(
       correctedPhrase: candidate.correctedPhrase,
-      rawPhrase: candidate.rawPhrase
+      rawPhrase: candidate.rawPhrase,
+      sourceTranscriptionId: transcriptionId
      )
      context.insert(suggestion)
      suggestionLookup[correctedLower] = suggestion
      didInsertOrUpdate = true
+     extractedEntries.append("\(candidate.rawPhrase) -> \(candidate.correctedPhrase)")
+    }
+   }
+
+   // Write extracted vocabulary summary back to the transcription
+   if !extractedEntries.isEmpty {
+    let defaultContext = ModelContext(modelContainer)
+    let txDescriptor = FetchDescriptor<Transcription>(
+     predicate: #Predicate { $0.id == transcriptionId }
+    )
+    if let tx = defaultContext.safeFetch(txDescriptor, context: "transcription for vocab linkback", logger: self.logger).first {
+     tx.extractedVocabulary = extractedEntries.joined(separator: "\n")
+     do {
+      try defaultContext.save()
+     } catch {
+      self.logger.error("Failed to save extractedVocabulary: \(error.localizedDescription, privacy: .public)")
+     }
     }
    }
 
