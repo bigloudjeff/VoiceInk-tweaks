@@ -106,6 +106,8 @@ extension UserDefaults {
         static let transcriptionRetentionMinutes = "TranscriptionRetentionMinutes"
         static let removeFillerWords = "RemoveFillerWords"
         static let fillerWords = "FillerWords"
+        static let removeTagBlocks = "RemoveTagBlocks"
+        static let removeBracketedContent = "RemoveBracketedContent"
 
         // Model Prewarm
         static let prewarmModelOnWake = "PrewarmModelOnWake"

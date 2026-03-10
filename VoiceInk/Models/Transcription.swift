@@ -32,6 +32,19 @@ final class Transcription {
     var targetAppName: String?
     var targetAppBundleId: String?
 
+    // MARK: - Forensic fields
+    var rawTranscript: String?
+    var aiProviderName: String?
+    var promptText: String?
+    var systemInstructionsSource: String?
+    var powerModeSystemInstructions: String?
+    var powerModePromptName: String?
+    var fillerWordRemovalEnabled: Bool = false
+    var fillerWordList: String?
+    var screenCaptureEnabled: Bool = false
+    var clipboardContextEnabled: Bool = false
+    var outputFilterApplied: Bool = false
+
     init(text: String,
          duration: TimeInterval,
          enhancedText: String? = nil,

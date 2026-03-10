@@ -108,7 +108,9 @@ class TranscriptionOrchestrator {
     text = try await serviceRegistry.transcribe(audioURL: url, model: model)
    }
    logger.notice(" Transcript: \(text, privacy: .private)")
+   let rawTranscript = text
    text = TranscriptionOutputFilter.filter(text)
+   let outputFilterApplied = (text != rawTranscript)
    logger.notice(" Output filter result: \(text, privacy: .private)")
    let transcriptionDuration = Date().timeIntervalSince(transcriptionStart)
 
@@ -152,6 +154,31 @@ class TranscriptionOrchestrator {
    if !fullSttPrompt.isEmpty {
     transcription.sttPrompt = fullSttPrompt
    }
+
+   // Forensic: raw transcript, output filter, filler words
+   transcription.rawTranscript = rawTranscript
+   transcription.outputFilterApplied = outputFilterApplied
+   let fillerManager = FillerWordManager.shared
+   transcription.fillerWordRemovalEnabled = fillerManager.isEnabled
+   if fillerManager.isEnabled {
+    transcription.fillerWordList = fillerManager.fillerWords.joined(separator: ", ")
+   }
+
+   // Forensic: power mode details
+   if let pmConfig = activePowerModeConfig, pmConfig.isEnabled {
+    transcription.powerModeSystemInstructions = pmConfig.systemInstructions
+    transcription.powerModePromptName = pmConfig.selectedPrompt
+   }
+
+   // Forensic: system instructions source
+   if AIPrompts.powerModeOverride != nil {
+    transcription.systemInstructionsSource = "power-mode"
+   } else if PromptFileManager.hasUserOverride("system-instructions") {
+    transcription.systemInstructionsSource = "user-override"
+   } else {
+    transcription.systemInstructionsSource = "bundle-default"
+   }
+
    finalPastedText = text
 
    if let enhancementService = enhancementService, enhancementService.isConfigured {
@@ -193,6 +220,13 @@ class TranscriptionOrchestrator {
       transcription.enhancementSource = "synchronous"
       transcription.aiRequestSystemMessage = enhancementService.lastSystemMessageSent
       transcription.aiRequestUserMessage = enhancementService.lastUserMessageSent
+
+      // Forensic: AI provider, prompt text, context toggles
+      transcription.aiProviderName = enhancementService.getAIService()?.selectedProvider.rawValue
+      transcription.promptText = enhancementService.activePrompt?.promptText
+      transcription.screenCaptureEnabled = enhancementService.useScreenCaptureContext
+      transcription.clipboardContextEnabled = enhancementService.useClipboardContext
+
       finalPastedText = enhancedText
      } catch is CancellationError {
       delegate.enhancementTask = nil

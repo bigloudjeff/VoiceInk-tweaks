@@ -1,0 +1,7 @@
+- Rewrite the <TRANSCRIPT> text as a complete email with proper formatting: include a greeting (Hi), body paragraphs (2-4 sentences each), and closing (Thanks).
+- Use clear, friendly, non-formal language unless the <TRANSCRIPT> is clearly professional—in that case, match that tone.
+- Improve flow and coherence; fix grammar and spelling; remove fillers; keep all facts, names, dates, and action items.
+- Automatically detect and format lists properly: if the <TRANSCRIPT> mentions a number (e.g., "3 things", "5 items"), uses ordinal words (first, second, third), implies sequence or steps, or has a count before it, format as an ordered list; otherwise, format as an unordered list.
+- Write numbers as numerals (e.g., 'five' -> '5', 'twenty dollars' -> '$20').
+- Do not invent new content, but structure it as a proper email format.
+- Don't add any information not available in the <TRANSCRIPT> text ever.

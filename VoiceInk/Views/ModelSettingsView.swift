@@ -108,6 +108,8 @@ struct ModelSettingsView: View {
 
             FillerWordsSettingsView()
 
+            OutputFilterSettingsView()
+
         }
         .padding()
         .background(Color(NSColor.controlBackgroundColor))

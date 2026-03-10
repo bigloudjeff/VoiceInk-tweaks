@@ -25,6 +25,8 @@ enum AppDefaults {
             UserDefaults.Keys.isTextFormattingEnabled: true,
             UserDefaults.Keys.isVADEnabled: true,
             "RemoveFillerWords": true,
+            UserDefaults.Keys.removeTagBlocks: true,
+            UserDefaults.Keys.removeBracketedContent: true,
             UserDefaults.Keys.selectedLanguage: "en",
             UserDefaults.Keys.appendTrailingSpace: true,
             UserDefaults.Keys.recorderType: "mini",

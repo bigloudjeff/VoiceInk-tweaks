@@ -107,6 +107,18 @@ class AudioTranscriptionService: ObservableObject {
  powerModeName: powerModeName,
  powerModeEmoji: powerModeEmoji
  )
+ // Forensic fields
+ newTranscription.aiProviderName = enhancementService.getAIService()?.selectedProvider.rawValue
+ newTranscription.promptText = enhancementService.activePrompt?.promptText
+ newTranscription.screenCaptureEnabled = enhancementService.useScreenCaptureContext
+ newTranscription.clipboardContextEnabled = enhancementService.useClipboardContext
+ if AIPrompts.powerModeOverride != nil {
+  newTranscription.systemInstructionsSource = "power-mode"
+ } else if PromptFileManager.hasUserOverride("system-instructions") {
+  newTranscription.systemInstructionsSource = "user-override"
+ } else {
+  newTranscription.systemInstructionsSource = "bundle-default"
+ }
  modelContext.insert(newTranscription)
  if modelContext.safeSave(context: "save transcription", logger: logger) {
  NotificationCenter.default.post(name: .transcriptionCreated, object: newTranscription)

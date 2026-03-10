@@ -121,6 +121,11 @@ class AudioTranscriptionManager: ObservableObject {
                             powerModeName: powerModeName,
                             powerModeEmoji: powerModeEmoji
                         )
+                        // Forensic fields
+                        transcription.aiProviderName = enhancementService.getAIService()?.selectedProvider.rawValue
+                        transcription.promptText = enhancementService.activePrompt?.promptText
+                        transcription.screenCaptureEnabled = enhancementService.useScreenCaptureContext
+                        transcription.clipboardContextEnabled = enhancementService.useClipboardContext
                         modelContext.insert(transcription)
                         try modelContext.trySave(context: "save enhanced transcription")
                         NotificationCenter.default.post(name: .transcriptionCreated, object: transcription)

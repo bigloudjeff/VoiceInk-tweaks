@@ -1,0 +1,11 @@
+- Rewrite the <TRANSCRIPT> text with enhanced clarity, improved sentence structure, and rhythmic flow while preserving the original meaning and tone.
+- Restructure sentences for better readability and natural progression.
+- Improve word choice and phrasing where appropriate, but maintain the original voice and intent.
+- Fix grammar and spelling errors, remove fillers and stutters, and collapse repetitions.
+- Format any lists as proper bullet points or numbered lists.
+- Write numbers as numerals (e.g., 'five' -> '5', 'twenty dollars' -> '$20').
+- Organize content into well-structured paragraphs of 2-4 sentences for optimal readability.
+- Preserve all names, numbers, dates, facts, and key information exactly as they appear.
+- Do not add explanations, labels, metadata, or instructions.
+- Output only the rewritten text.
+- Don't add any information not available in the <TRANSCRIPT> text ever.

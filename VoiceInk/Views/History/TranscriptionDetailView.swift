@@ -41,6 +41,8 @@ struct TranscriptionDetailView: View {
        VocabularyChipsSection(extractedVocabulary: extractedVocab)
       }
      }
+
+     ForensicsSection(transcription: transcription)
     }
     .padding(16)
    }
@@ -443,5 +445,249 @@ private enum WordDiff {
 
  private static func trimmed(_ s: String) -> String {
   s.trimmingCharacters(in: .whitespacesAndNewlines)
+ }
+}
+
+// MARK: - Forensics Section
+
+private struct ForensicsSection: View {
+ let transcription: Transcription
+ @State private var isExpanded = false
+ @State private var expandedField: String?
+
+ private var hasForensicData: Bool {
+  transcription.rawTranscript != nil
+  || transcription.aiRequestSystemMessage != nil
+  || transcription.aiProviderName != nil
+  || transcription.promptText != nil
+ }
+
+ var body: some View {
+  if hasForensicData {
+   VStack(alignment: .leading, spacing: 6) {
+    Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() } }) {
+     HStack(spacing: 4) {
+      Image(systemName: "magnifyingglass")
+       .font(.system(size: 10, weight: .semibold))
+      Text("Forensics")
+       .font(.system(size: 11, weight: .semibold))
+      Spacer()
+      Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+       .font(.system(size: 9, weight: .semibold))
+     }
+     .foregroundColor(.secondary)
+    }
+    .buttonStyle(.plain)
+
+    if isExpanded {
+     VStack(alignment: .leading, spacing: 8) {
+      // Metadata grid
+      ForensicGrid(transcription: transcription)
+
+      // Raw transcript
+      if let raw = transcription.rawTranscript, raw != transcription.text {
+       ForensicExpandableField(
+        label: "Raw Transcript (pre-filter)",
+        text: raw,
+        isExpanded: expandedField == "raw",
+        onToggle: { toggleField("raw") }
+       )
+      }
+
+      // Prompt text
+      if let prompt = transcription.promptText {
+       ForensicExpandableField(
+        label: "Prompt Rules",
+        text: prompt,
+        isExpanded: expandedField == "prompt",
+        onToggle: { toggleField("prompt") }
+       )
+      }
+
+      // System message sent to LLM
+      if let sys = transcription.aiRequestSystemMessage {
+       ForensicExpandableField(
+        label: "System Message (sent to LLM)",
+        text: sys,
+        isExpanded: expandedField == "system",
+        onToggle: { toggleField("system") }
+       )
+      }
+
+      // User message sent to LLM
+      if let usr = transcription.aiRequestUserMessage {
+       ForensicExpandableField(
+        label: "User Message (sent to LLM)",
+        text: usr,
+        isExpanded: expandedField == "user",
+        onToggle: { toggleField("user") }
+       )
+      }
+
+      // Power mode system instructions
+      if let pmSys = transcription.powerModeSystemInstructions {
+       ForensicExpandableField(
+        label: "Power Mode System Instructions",
+        text: pmSys,
+        isExpanded: expandedField == "pmSys",
+        onToggle: { toggleField("pmSys") }
+       )
+      }
+
+      // STT prompt
+      if let stt = transcription.sttPrompt {
+       ForensicExpandableField(
+        label: "STT Prompt",
+        text: stt,
+        isExpanded: expandedField == "stt",
+        onToggle: { toggleField("stt") }
+       )
+      }
+     }
+     .padding(12)
+     .background(
+      RoundedRectangle(cornerRadius: 10, style: .continuous)
+       .fill(.thinMaterial)
+       .overlay(
+        RoundedRectangle(cornerRadius: 10, style: .continuous)
+         .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
+       )
+     )
+    }
+   }
+  }
+ }
+
+ private func toggleField(_ field: String) {
+  withAnimation(.easeInOut(duration: 0.2)) {
+   expandedField = expandedField == field ? nil : field
+  }
+ }
+}
+
+private struct ForensicGrid: View {
+ let transcription: Transcription
+
+ var body: some View {
+  let items = buildItems()
+  if !items.isEmpty {
+   LazyVGrid(columns: [
+    GridItem(.flexible(), alignment: .topLeading),
+    GridItem(.flexible(), alignment: .topLeading)
+   ], alignment: .leading, spacing: 6) {
+    ForEach(items, id: \.label) { item in
+     ForensicGridItem(label: item.label, value: item.value)
+    }
+   }
+  }
+ }
+
+ private func buildItems() -> [(label: String, value: String)] {
+  var items: [(label: String, value: String)] = []
+
+  if let provider = transcription.aiProviderName {
+   items.append(("AI Provider", provider))
+  }
+  if let model = transcription.aiEnhancementModelName {
+   items.append(("AI Model", model))
+  }
+  if let promptName = transcription.promptName {
+   items.append(("Prompt", promptName))
+  }
+  if let source = transcription.systemInstructionsSource {
+   items.append(("System Instructions", source))
+  }
+  if let sttModel = transcription.transcriptionModelName {
+   items.append(("STT Model", sttModel))
+  }
+  if let pmName = transcription.powerModeName {
+   let emoji = transcription.powerModeEmoji ?? ""
+   items.append(("Power Mode", "\(emoji) \(pmName)".trimmingCharacters(in: .whitespaces)))
+  }
+  if let pmPrompt = transcription.powerModePromptName {
+   items.append(("PM Prompt", pmPrompt))
+  }
+  if let enhSrc = transcription.enhancementSource {
+   items.append(("Enhancement", enhSrc))
+  }
+  if transcription.fillerWordRemovalEnabled {
+   items.append(("Filler Removal", transcription.fillerWordList ?? "enabled"))
+  }
+  if transcription.outputFilterApplied {
+   items.append(("Output Filter", "applied"))
+  }
+  items.append(("Screen Capture", transcription.screenCaptureEnabled ? "on" : "off"))
+  items.append(("Clipboard Context", transcription.clipboardContextEnabled ? "on" : "off"))
+  if let target = transcription.targetAppName {
+   items.append(("Target App", target))
+  }
+  if let tDur = transcription.transcriptionDuration {
+   items.append(("STT Duration", String(format: "%.2fs", tDur)))
+  }
+  if let eDur = transcription.enhancementDuration {
+   items.append(("AI Duration", String(format: "%.2fs", eDur)))
+  }
+
+  return items
+ }
+}
+
+private struct ForensicGridItem: View {
+ let label: String
+ let value: String
+
+ var body: some View {
+  VStack(alignment: .leading, spacing: 1) {
+   Text(label)
+    .font(.system(size: 9, weight: .medium))
+    .foregroundColor(.secondary.opacity(0.7))
+   Text(value)
+    .font(.system(size: 11, weight: .regular))
+    .foregroundColor(.primary.opacity(0.8))
+    .lineLimit(1)
+  }
+ }
+}
+
+private struct ForensicExpandableField: View {
+ let label: String
+ let text: String
+ let isExpanded: Bool
+ let onToggle: () -> Void
+
+ var body: some View {
+  VStack(alignment: .leading, spacing: 4) {
+   Button(action: onToggle) {
+    HStack(spacing: 4) {
+     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+      .font(.system(size: 8, weight: .semibold))
+     Text(label)
+      .font(.system(size: 10, weight: .medium))
+     Spacer()
+    }
+    .foregroundColor(.secondary)
+   }
+   .buttonStyle(.plain)
+
+   if isExpanded {
+    ScrollView {
+     Text(text)
+      .font(.system(size: 11, design: .monospaced))
+      .foregroundColor(.primary.opacity(0.8))
+      .textSelection(.enabled)
+      .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    .frame(maxHeight: 200)
+    .padding(8)
+    .background(
+     RoundedRectangle(cornerRadius: 6, style: .continuous)
+      .fill(Color(NSColor.textBackgroundColor).opacity(0.5))
+      .overlay(
+       RoundedRectangle(cornerRadius: 6, style: .continuous)
+        .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
+      )
+    )
+   }
+  }
  }
 }
