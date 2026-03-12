@@ -284,73 +284,17 @@ class AIEnhancementService: ObservableObject {
             self.lastUserMessageSent = formattedText
         }
 
-        if aiService.selectedProvider == .appleIntelligence {
-            if #available(macOS 26.0, *) {
-                do {
-                    let result = try await AppleIntelligenceService.shared.enhance(text: formattedText, systemPrompt: systemMessage)
-                    return AIEnhancementOutputFilter.filter(result)
-                } catch {
-                    throw EnhancementError.customError(error.localizedDescription)
-                }
-            } else {
-                throw EnhancementError.customError("Apple Intelligence requires macOS 26.0 or later.")
-            }
-        }
-
-        if aiService.selectedProvider == .ollama {
-            do {
-                let result = try await aiService.enhanceWithOllama(text: formattedText, systemPrompt: systemMessage)
-                return AIEnhancementOutputFilter.filter(result)
-            } catch {
-                if let localError = error as? LocalAIError {
-                    throw EnhancementError.customError(localError.errorDescription ?? "An unknown Ollama error occurred.")
-                } else {
-                    throw EnhancementError.customError(error.localizedDescription)
-                }
-            }
-        }
-
         try await waitForRateLimit()
 
-        do {
-            let result: String
-            switch aiService.selectedProvider {
-            case .anthropic:
-                result = try await AnthropicLLMClient.chatCompletion(
-                    apiKey: aiService.apiKey,
-                    model: aiService.currentModel,
-                    messages: [.user(formattedText)],
-                    systemPrompt: systemMessage,
-                    timeout: baseTimeout
-                )
-            default:
-                guard let baseURL = URL(string: aiService.selectedProvider.baseURL) else {
-                    throw EnhancementError.customError("\(aiService.selectedProvider.rawValue) has an invalid API endpoint URL. Please update it in AI settings.")
-                }
-                let temperature = aiService.currentModel.lowercased().hasPrefix("gpt-5") ? 1.0 : 0.3
-                let reasoningEffort = ReasoningConfig.getReasoningParameter(for: aiService.currentModel)
-                result = try await OpenAILLMClient.chatCompletion(
-                    baseURL: baseURL,
-                    apiKey: aiService.apiKey,
-                    model: aiService.currentModel,
-                    messages: [.user(formattedText)],
-                    systemPrompt: systemMessage,
-                    temperature: temperature,
-                    reasoningEffort: reasoningEffort,
-                    timeout: baseTimeout
-                )
-            }
-            return AIEnhancementOutputFilter.filter(result.trimmingCharacters(in: .whitespacesAndNewlines))
-        } catch let error as LLMKitError {
-            throw mapLLMKitError(error)
-        } catch let error as EnhancementError {
-            throw error
-        } catch {
-            throw EnhancementError.customError(error.localizedDescription)
-        }
+        return try await Self.dispatchLLMRequest(
+            userMessage: formattedText,
+            systemMessage: systemMessage,
+            aiService: aiService,
+            baseTimeout: baseTimeout
+        )
     }
 
-    private func mapLLMKitError(_ error: LLMKitError) -> EnhancementError {
+    private static func mapLLMKitError(_ error: LLMKitError) -> EnhancementError {
         switch error {
         case .missingAPIKey:
             return .notConfigured
@@ -432,6 +376,12 @@ class AIEnhancementService: ObservableObject {
     }
 
     static func performEnhancementRequest(userMessage: String, systemMessage: String, aiService: AIService, baseTimeout: TimeInterval = 30) async throws -> String {
+        return try await dispatchLLMRequest(userMessage: userMessage, systemMessage: systemMessage, aiService: aiService, baseTimeout: baseTimeout)
+    }
+
+    /// Shared LLM dispatch logic used by both the instance makeRequest path and
+    /// the static performEnhancementRequest path (background queue).
+    private static func dispatchLLMRequest(userMessage: String, systemMessage: String, aiService: AIService, baseTimeout: TimeInterval) async throws -> String {
         if aiService.selectedProvider == .appleIntelligence {
             if #available(macOS 26.0, *) {
                 do {
@@ -471,7 +421,7 @@ class AIEnhancementService: ObservableObject {
                 )
             default:
                 guard let baseURL = URL(string: aiService.selectedProvider.baseURL) else {
-                    throw EnhancementError.customError("\(aiService.selectedProvider.rawValue) has an invalid API endpoint URL.")
+                    throw EnhancementError.customError("\(aiService.selectedProvider.rawValue) has an invalid API endpoint URL. Please update it in AI settings.")
                 }
                 let temperature = aiService.currentModel.lowercased().hasPrefix("gpt-5") ? 1.0 : 0.3
                 let reasoningEffort = ReasoningConfig.getReasoningParameter(for: aiService.currentModel)
@@ -488,20 +438,7 @@ class AIEnhancementService: ObservableObject {
             }
             return AIEnhancementOutputFilter.filter(result.trimmingCharacters(in: .whitespacesAndNewlines))
         } catch let error as LLMKitError {
-            switch error {
-            case .missingAPIKey:
-                throw EnhancementError.notConfigured
-            case .httpError(let statusCode, let message):
-                if statusCode == 429 { throw EnhancementError.rateLimitExceeded }
-                if (500...599).contains(statusCode) { throw EnhancementError.serverError }
-                throw EnhancementError.customError("HTTP \(statusCode): \(message)")
-            case .noResultReturned:
-                throw EnhancementError.enhancementFailed
-            case .networkError:
-                throw EnhancementError.networkError
-            case .invalidURL, .decodingError, .encodingError, .timeout:
-                throw EnhancementError.customError(error.localizedDescription ?? "An unknown error occurred.")
-            }
+            throw mapLLMKitError(error)
         } catch let error as EnhancementError {
             throw error
         } catch {
