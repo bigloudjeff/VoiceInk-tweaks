@@ -36,16 +36,20 @@ class RecorderUICoordinator: NSObject {
 
  func showRecorderPanel() {
   guard let delegate = delegate else { return }
+  guard let whisperState = delegate as? WhisperState else {
+   delegate.logger.error("RecorderUICoordinator: delegate is not WhisperState, cannot show recorder panel")
+   return
+  }
   let screen = delegate.selectedScreen
   delegate.logger.notice(" Showing \(delegate.recorderType, privacy: .public) recorder")
   if delegate.recorderType == "notch" {
    if notchWindowManager == nil {
-    notchWindowManager = NotchWindowManager(whisperState: delegate as! WhisperState, recorder: delegate.recorder)
+    notchWindowManager = NotchWindowManager(whisperState: whisperState, recorder: delegate.recorder)
    }
    notchWindowManager?.show(on: screen)
   } else {
    if miniWindowManager == nil {
-    miniWindowManager = MiniWindowManager(whisperState: delegate as! WhisperState, recorder: delegate.recorder)
+    miniWindowManager = MiniWindowManager(whisperState: whisperState, recorder: delegate.recorder)
    }
    miniWindowManager?.show(on: screen)
   }
