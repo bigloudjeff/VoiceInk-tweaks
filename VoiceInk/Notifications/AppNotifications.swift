@@ -57,6 +57,7 @@ extension Notification.Name {
     static let openFileForTranscription = Notification.Name("openFileForTranscription")
     static let audioDeviceSwitchRequired = Notification.Name("audioDeviceSwitchRequired")
     static let backgroundEnhancementCompleted = Notification.Name("backgroundEnhancementCompleted")
+    static let backgroundEnhancementFailed = Notification.Name("backgroundEnhancementFailed")
     static let vocabularySuggestionsUpdated = Notification.Name("vocabularySuggestionsUpdated")
     static let audioDeviceChanged = Notification.Name("AudioDeviceChanged")
     static let powerModeConfigurationsDidChange = Notification.Name("PowerModeConfigurationsDidChange")

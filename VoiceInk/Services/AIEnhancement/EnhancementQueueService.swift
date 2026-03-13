@@ -113,6 +113,16 @@ class EnhancementQueueService {
             }
         } catch {
             logger.error("Background enhancement failed for \(job.transcriptionId.uuidString, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            await MainActor.run {
+                NotificationCenter.default.post(
+                    name: .backgroundEnhancementFailed,
+                    object: nil,
+                    userInfo: [
+                        "transcriptionId": job.transcriptionId,
+                        "error": error.localizedDescription
+                    ]
+                )
+            }
         }
     }
 }
