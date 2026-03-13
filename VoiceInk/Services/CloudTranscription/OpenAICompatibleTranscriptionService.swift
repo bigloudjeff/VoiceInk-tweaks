@@ -47,7 +47,11 @@ class OpenAICompatibleTranscriptionService {
         var body = Data()
         let crlf = "\r\n"
         
-        guard let audioData = try? Data(contentsOf: audioURL) else {
+        let audioData: Data
+        do {
+            audioData = try Data(contentsOf: audioURL)
+        } catch {
+            logger.error("Failed to read audio file at \(audioURL.path, privacy: .public): \(error.localizedDescription, privacy: .public)")
             throw CloudTranscriptionError.audioFileNotFound
         }
         
