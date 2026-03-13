@@ -44,10 +44,10 @@ struct PowerModeConfig: Codable, Identifiable, Equatable {
         self.useClipboardContext = useClipboardContext
         self.isAutoSendEnabled = isAutoSendEnabled
         self.systemInstructions = systemInstructions
-        self.selectedAIProvider = selectedAIProvider ?? UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedAIProvider)
+        self.selectedAIProvider = selectedAIProvider
         self.selectedAIModel = selectedAIModel
-        self.selectedTranscriptionModelName = selectedTranscriptionModelName ?? UserDefaults.standard.string(forKey: UserDefaults.Keys.currentTranscriptionModel)
-        self.selectedLanguage = selectedLanguage ?? UserDefaults.standard.string(forKey: UserDefaults.Keys.selectedLanguage) ?? "en"
+        self.selectedTranscriptionModelName = selectedTranscriptionModelName
+        self.selectedLanguage = selectedLanguage
         self.isEnabled = isEnabled
         self.isDefault = isDefault
         self.hotkeyShortcut = hotkeyShortcut
