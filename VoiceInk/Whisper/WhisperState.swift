@@ -16,6 +16,11 @@ enum RecordingState: Equatable {
  case busy
 }
 
+enum RecorderStyle: String {
+ case mini
+ case notch
+}
+
 @MainActor
 class WhisperState: NSObject, ObservableObject, WhisperContextProvider {
  @Published var recordingState: RecordingState = .idle
@@ -35,10 +40,10 @@ class WhisperState: NSObject, ObservableObject, WhisperContextProvider {
  var activeTranscriptionTask: Task<Void, Never>?
 
 
- @Published var recorderType: String = UserDefaults.standard.string(forKey: UserDefaults.Keys.recorderType) ?? "mini" {
+ @Published var recorderType: String = UserDefaults.standard.string(forKey: UserDefaults.Keys.recorderType) ?? RecorderStyle.mini.rawValue {
  didSet {
  if isMiniRecorderVisible {
- if oldValue == "notch" {
+ if oldValue == RecorderStyle.notch.rawValue {
  recorderUICoordinator.notchWindowManager?.hide()
  recorderUICoordinator.notchWindowManager = nil
  } else {

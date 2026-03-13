@@ -37,7 +37,7 @@ struct SetRecorderStyleIntent: AppIntent {
  @MainActor
  func perform() async throws -> some IntentResult & ProvidesDialog {
   let normalized = style.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-  guard normalized == "mini" || normalized == "notch" else {
+  guard RecorderStyle(rawValue: normalized) != nil else {
    return .result(dialog: "Invalid style \"\(style)\". Use: mini or notch")
   }
   UserDefaults.standard.set(normalized, forKey: UserDefaults.Keys.recorderType)

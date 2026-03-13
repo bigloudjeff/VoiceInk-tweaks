@@ -162,7 +162,7 @@ enum VoiceInkURLHandler {
   case "style":
    guard let value = param("value", from: params) else { notify("Missing value parameter", type: .error); return }
    let normalized = value.lowercased()
-   guard normalized == "mini" || normalized == "notch" else {
+   guard RecorderStyle(rawValue: normalized) != nil else {
     notify("Invalid style: \(value)", type: .error); return
    }
    UserDefaults.standard.set(normalized, forKey: UserDefaults.Keys.recorderType)

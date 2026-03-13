@@ -235,8 +235,8 @@ private struct RecordingStageContent: View {
    Form {
     Section {
      Picker("Recorder Style", selection: $whisperState.recorderType) {
-      Text("Notch").tag("notch")
-      Text("Mini").tag("mini")
+      Text("Notch").tag(RecorderStyle.notch.rawValue)
+      Text("Mini").tag(RecorderStyle.mini.rawValue)
      }
      .pickerStyle(.segmented)
 

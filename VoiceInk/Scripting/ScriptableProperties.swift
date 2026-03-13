@@ -66,7 +66,7 @@ extension NSApplication {
  }
 
  @objc var scriptRecorderStyle: String {
-  UserDefaults.standard.string(forKey: UserDefaults.Keys.recorderType) ?? "mini"
+  UserDefaults.standard.string(forKey: UserDefaults.Keys.recorderType) ?? RecorderStyle.mini.rawValue
  }
 
  @objc var scriptPasteMethod: String {

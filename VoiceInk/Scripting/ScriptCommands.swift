@@ -347,7 +347,7 @@ class GetStatusCommand: NSScriptCommand {
    }
    let mode = UserDefaults.standard.string(forKey: UserDefaults.Keys.recordingMode) ?? "hybrid"
    lines.append("Recording Mode: \(mode)")
-   let style = UserDefaults.standard.string(forKey: UserDefaults.Keys.recorderType) ?? "mini"
+   let style = UserDefaults.standard.string(forKey: UserDefaults.Keys.recorderType) ?? RecorderStyle.mini.rawValue
    lines.append("Recorder: \(style)")
    let paste = UserDefaults.standard.string(forKey: UserDefaults.Keys.pasteMethod) ?? "default"
    lines.append("Paste: \(paste)")
@@ -381,7 +381,7 @@ class SetRecorderStyleCommand: NSScriptCommand {
    return "Error: style parameter required (mini, notch)"
   }
   let normalized = style.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-  guard normalized == "mini" || normalized == "notch" else {
+  guard RecorderStyle(rawValue: normalized) != nil else {
    return "Error: invalid style \"\(style)\". Use: mini, notch"
   }
   UserDefaults.standard.set(normalized, forKey: UserDefaults.Keys.recorderType)

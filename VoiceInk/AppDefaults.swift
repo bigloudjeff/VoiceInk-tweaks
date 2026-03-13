@@ -29,7 +29,7 @@ enum AppDefaults {
             UserDefaults.Keys.removeBracketedContent: true,
             UserDefaults.Keys.selectedLanguage: "en",
             UserDefaults.Keys.appendTrailingSpace: true,
-            UserDefaults.Keys.recorderType: "mini",
+            UserDefaults.Keys.recorderType: RecorderStyle.mini.rawValue,
             UserDefaults.Keys.recorderScreenSelection: "mouseCursor",
             "warnNoTextField": true,
 

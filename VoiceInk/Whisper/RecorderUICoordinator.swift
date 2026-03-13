@@ -42,7 +42,7 @@ class RecorderUICoordinator: NSObject {
   }
   let screen = delegate.selectedScreen
   delegate.logger.notice(" Showing \(delegate.recorderType, privacy: .public) recorder")
-  if delegate.recorderType == "notch" {
+  if delegate.recorderType == RecorderStyle.notch.rawValue {
    if notchWindowManager == nil {
     notchWindowManager = NotchWindowManager(whisperState: whisperState, recorder: delegate.recorder)
    }
@@ -57,7 +57,7 @@ class RecorderUICoordinator: NSObject {
 
  func hideRecorderPanel() {
   guard let delegate = delegate else { return }
-  if delegate.recorderType == "notch" {
+  if delegate.recorderType == RecorderStyle.notch.rawValue {
    notchWindowManager?.hide()
   } else {
    miniWindowManager?.hide()
