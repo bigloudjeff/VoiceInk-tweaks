@@ -198,6 +198,9 @@ struct RecorderPromptButton: View {
  }
  }
  .accessibilityIdentifier(AccessibilityID.Recorder.buttonPrompt)
+ .accessibilityLabel(enhancementService.isEnhancementEnabled
+  ? "Enhancement prompt: \(enhancementService.activePrompt?.title ?? "None")"
+  : "Enable AI enhancement")
  .frame(width: buttonSize)
  .padding(padding)
  .onHover {
@@ -259,6 +262,9 @@ struct RecorderPowerModeButton: View {
  activePopover = activePopover == .power ? .none : .power
  }
  .accessibilityIdentifier(AccessibilityID.Recorder.buttonPowerMode)
+ .accessibilityLabel(powerModeManager.currentActiveConfiguration != nil
+  ? "Power mode: \(powerModeManager.currentActiveConfiguration?.name ?? "")"
+  : "Power mode")
  .frame(width: buttonSize)
  .padding(padding)
  .onHover {
@@ -328,6 +334,16 @@ struct RecorderStatusDisplay: View {
  }
  }
  .accessibilityIdentifier(AccessibilityID.Recorder.statusDisplay)
+ .accessibilityLabel(statusLabel)
  .animation(.easeInOut(duration: 0.2), value: currentState)
+ }
+
+ private var statusLabel: String {
+ switch currentState {
+ case .enhancing: return "Enhancing transcription"
+ case .transcribing: return "Transcribing audio"
+ case .recording: return "Recording"
+ default: return "Ready to record"
+ }
  }
 }
