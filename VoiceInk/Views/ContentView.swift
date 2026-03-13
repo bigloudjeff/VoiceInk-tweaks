@@ -295,45 +295,26 @@ struct ContentView: View {
             Text("You have unsaved Power Mode changes.")
         }
         .onReceive(NotificationCenter.default.publisher(for: .navigateToDestination)) { notification in
-            if let destination = notification.userInfo?["destination"] as? String {
-                switch destination {
-                case "Settings", "Preferences":
-                    selectedView = .settings
-                case "AI Models":
-                    selectedPipelineStage = .speechToText
-                    selectedView = .pipeline
-                case "VoiceInk Pro":
-                    selectedView = .license
-                case "History":
-                    HistoryWindowController.shared.showHistoryWindow(
-                        modelContainer: modelContext.container,
-                        whisperState: whisperState
-                    )
-                case "Permissions":
-                    selectedView = .permissions
-                case "Enhancement":
-                    selectedPipelineStage = .aiEnhancement
-                    selectedView = .pipeline
-                case "Post Processing":
-                    selectedPipelineStage = .textFormatting
-                    selectedView = .pipeline
-                case "Pipeline":
-                    selectedView = .pipeline
-                case "Transcribe Audio":
-                    selectedView = .transcribeAudio
-                case "Power Mode":
-                    selectedView = .powerMode
-                case "Dashboard":
-                    selectedView = .metrics
-                case "Dictionary":
-                    selectedPipelineStage = .wordReplacement
-                    selectedView = .pipeline
-                case "Audio Input":
-                    selectedPipelineStage = .recording
-                    selectedView = .pipeline
-                default:
-                    break
-                }
+            let destination: NavigationDestination?
+            if let typed = notification.userInfo?[NavigationDestination.userInfoKey] as? NavigationDestination {
+                destination = typed
+            } else if let legacy = notification.userInfo?["destination"] as? String {
+                destination = NavigationDestination(legacyString: legacy)
+            } else {
+                destination = nil
+            }
+            guard let destination else { return }
+            switch destination {
+            case .view(let viewType):
+                selectedView = viewType
+            case .pipelineStage(let stage):
+                selectedPipelineStage = stage
+                selectedView = .pipeline
+            case .historyWindow:
+                HistoryWindowController.shared.showHistoryWindow(
+                    modelContainer: modelContext.container,
+                    whisperState: whisperState
+                )
             }
         }
     }

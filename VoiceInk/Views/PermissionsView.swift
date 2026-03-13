@@ -219,11 +219,7 @@ struct PermissionsView: View {
                         isGranted: hotkeyManager.selectedHotkey1 != .none,
                         buttonTitle: "Configure Shortcut",
                         buttonAction: {
-                            NotificationCenter.default.post(
-                                name: .navigateToDestination,
-                                object: nil,
-                                userInfo: ["destination": "Settings"]
-                            )
+                            NavigationDestination.view(.settings).post()
                         },
                         checkPermission: { permissionManager.checkKeyboardShortcut() }
                     )

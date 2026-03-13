@@ -291,11 +291,7 @@ struct ConfigurationView: View {
   saveConfiguration()
   if let nextView = notification.object as? ViewType {
    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-    NotificationCenter.default.post(
-     name: .navigateToDestination,
-     object: nil,
-     userInfo: ["destination": nextView.rawValue]
-    )
+    NavigationDestination.view(nextView).post()
    }
   }
  }

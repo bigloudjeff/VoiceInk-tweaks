@@ -195,11 +195,9 @@ class ShowWindowCommand: NSScriptCommand {
    }
    menuBarManager.focusMainWindow()
    if let destination = directParameter as? String, !destination.isEmpty {
-    NotificationCenter.default.post(
-     name: .navigateToDestination,
-     object: nil,
-     userInfo: ["destination": destination]
-    )
+    if let nav = NavigationDestination(legacyString: destination) {
+     nav.post()
+    }
     return "Showing \(destination)"
    }
    return "Main window shown"

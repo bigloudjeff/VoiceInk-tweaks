@@ -18,11 +18,7 @@ struct MetricsView: View {
                     type: daysRemaining <= 2 ? .warning : .info,
                     onAddLicenseKey: {
                         // Post notification to navigate to VoiceInk Pro tab
-                        NotificationCenter.default.post(
-                            name: .navigateToDestination,
-                            object: nil,
-                            userInfo: ["destination": "VoiceInk Pro"]
-                        )
+                        NavigationDestination.view(.license).post()
                     }
                 )
                 .padding()
@@ -31,12 +27,7 @@ struct MetricsView: View {
                     message: "Your trial has expired. Upgrade to continue using VoiceInk",
                     type: .expired,
                     onAddLicenseKey: {
-                        // Also allow navigation from expired state
-                        NotificationCenter.default.post(
-                            name: .navigateToDestination,
-                            object: nil,
-                            userInfo: ["destination": "VoiceInk Pro"]
-                        )
+                        NavigationDestination.view(.license).post()
                     }
                 )
                 .padding()

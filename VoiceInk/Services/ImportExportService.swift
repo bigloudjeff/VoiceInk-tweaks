@@ -508,11 +508,7 @@ class ImportExportService {
             
             let response = alert.runModal()
             if response == .alertSecondButtonReturn {
-                NotificationCenter.default.post(
-                    name: .navigateToDestination,
-                    object: nil,
-                    userInfo: ["destination": "Pipeline"]
-                )
+                NavigationDestination.view(.pipeline).post()
             }
         }
     }

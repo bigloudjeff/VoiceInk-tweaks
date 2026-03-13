@@ -287,11 +287,9 @@ enum VoiceInkURLHandler {
  private static func navigateTo(_ destination: String) {
   guard let menuBarManager = AppServiceLocator.shared.menuBarManager else { return }
   menuBarManager.focusMainWindow()
-  NotificationCenter.default.post(
-   name: .navigateToDestination,
-   object: nil,
-   userInfo: ["destination": destination]
-  )
+  if let nav = NavigationDestination(legacyString: destination) {
+   nav.post()
+  }
  }
 
  private static func notify(_ message: String, type: AppNotificationView.NotificationType) {

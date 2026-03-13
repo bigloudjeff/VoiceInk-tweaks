@@ -192,19 +192,11 @@ struct MetricsSetupView: View {
     }
     
     private func openSettings() {
-        NotificationCenter.default.post(
-            name: .navigateToDestination,
-            object: nil,
-            userInfo: ["destination": "Settings"]
-        )
+        NavigationDestination.view(.settings).post()
     }
-    
+
     private func openModelManagement() {
-        NotificationCenter.default.post(
-            name: .navigateToDestination,
-            object: nil,
-            userInfo: ["destination": "AI Models"]
-        )
+        NavigationDestination.pipelineStage(.speechToText).post()
     }
 }
 

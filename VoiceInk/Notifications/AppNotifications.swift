@@ -1,5 +1,43 @@
 import Foundation
 
+/// Type-safe navigation destination for .navigateToDestination notifications.
+/// Post via `NavigationDestination.post(.settings)` instead of raw strings.
+enum NavigationDestination {
+ case view(ViewType)
+ case pipelineStage(PipelineStage)
+ case historyWindow
+
+ static let userInfoKey = "typedDestination"
+
+ func post() {
+  NotificationCenter.default.post(
+   name: .navigateToDestination,
+   object: nil,
+   userInfo: [Self.userInfoKey: self]
+  )
+ }
+
+ /// Convenience initializer from legacy string destinations.
+ init?(legacyString: String) {
+  switch legacyString {
+  case "Settings", "Preferences": self = .view(.settings)
+  case "AI Models": self = .pipelineStage(.speechToText)
+  case "VoiceInk Pro": self = .view(.license)
+  case "History": self = .historyWindow
+  case "Permissions": self = .view(.permissions)
+  case "Enhancement": self = .pipelineStage(.aiEnhancement)
+  case "Post Processing": self = .pipelineStage(.textFormatting)
+  case "Pipeline": self = .view(.pipeline)
+  case "Transcribe Audio": self = .view(.transcribeAudio)
+  case "Power Mode": self = .view(.powerMode)
+  case "Dashboard": self = .view(.metrics)
+  case "Dictionary": self = .pipelineStage(.wordReplacement)
+  case "Audio Input": self = .pipelineStage(.recording)
+  default: return nil
+  }
+ }
+}
+
 extension Notification.Name {
     static let AppSettingsDidChange = Notification.Name("appSettingsDidChange")
     static let languageDidChange = Notification.Name("languageDidChange")

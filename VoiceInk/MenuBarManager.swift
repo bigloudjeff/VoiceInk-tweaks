@@ -84,8 +84,8 @@ class MenuBarManager: ObservableObject {
         }
     }
     
-    func openMainWindowAndNavigate(to destination: String) {
-        logger.notice("MenuBarManager: Navigating to \(destination, privacy: .public)")
+    func openMainWindowAndNavigate(to destination: NavigationDestination) {
+        logger.notice("MenuBarManager: Navigating to destination")
 
         NSApplication.shared.setActivationPolicy(.regular)
 
@@ -94,14 +94,9 @@ class MenuBarManager: ObservableObject {
             return
         }
 
-        // Post a notification to navigate to the desired destination
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            NotificationCenter.default.post(
-                name: .navigateToDestination,
-                object: nil,
-                userInfo: ["destination": destination]
-            )
-            self.logger.notice("MenuBarManager: Posted navigation notification for \(destination, privacy: .public)")
+            destination.post()
+            self.logger.notice("MenuBarManager: Posted navigation notification")
         }
     }
 

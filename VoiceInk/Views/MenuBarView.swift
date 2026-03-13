@@ -41,7 +41,7 @@ struct MenuBarView: View {
                 Divider()
                 
                 Button("Manage Models") {
-                    menuBarManager.openMainWindowAndNavigate(to: "AI Models")
+                    menuBarManager.openMainWindowAndNavigate(to: .pipelineStage(.speechToText))
                 }
                 .accessibilityIdentifier(AccessibilityID.MenuBar.buttonManageModels)
             } label: {
