@@ -10,7 +10,6 @@ import FluidAudio
 struct VoiceInkApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     let container: ModelContainer
-    let containerInitializationFailed: Bool
     
     @StateObject private var whisperState: WhisperState
     @StateObject private var hotkeyManager: HotkeyManager
@@ -48,19 +47,14 @@ struct VoiceInkApp: App {
             WordReplacement.self,
             VocabularySuggestion.self
         ])
-        var initializationFailed = false
-        
-        // Attempt 1: Try persistent storage
+        // Try persistent storage first, fall back to in-memory
         if let persistentContainer = Self.createPersistentContainer(schema: schema, logger: logger) {
             container = persistentContainer
-        }
-        // Attempt 2: Try in-memory storage
-        else if let memoryContainer = Self.createInMemoryContainer(schema: schema, logger: logger) {
+        } else if let memoryContainer = Self.createInMemoryContainer(schema: schema, logger: logger) {
             container = memoryContainer
 
             logger.warning("Using in-memory storage as fallback. Data will not persist between sessions.")
 
-            // Show alert to user about storage issue
             DispatchQueue.main.async {
                 let alert = NSAlert()
                 alert.messageText = "Storage Warning"
@@ -69,20 +63,11 @@ struct VoiceInkApp: App {
                 alert.addButton(withTitle: "OK")
                 alert.runModal()
             }
+        } else {
+            // Both persistent and in-memory failed — fatal
+            logger.critical("All ModelContainer initialization attempts failed")
+            preconditionFailure("Unable to create ModelContainer. SwiftData is unavailable.")
         }
-        // All attempts failed
-        else {
-            logger.critical("ModelContainer initialization failed")
-            initializationFailed = true
-
-            // Create minimal in-memory container to satisfy initialization
-            let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-            container = (try? ModelContainer(for: schema, configurations: [config])) ?? {
-                preconditionFailure("Unable to create ModelContainer. SwiftData is unavailable.")
-            }()
-        }
-        
-        containerInitializationFailed = initializationFailed
         
         // Initialize services with proper sharing of instances
         let aiService = AIService()
@@ -217,19 +202,6 @@ struct VoiceInkApp: App {
                     .environmentObject(enhancementService)
                     .modelContainer(container)
                     .onAppear {
-                        // Check if container initialization failed
-                        if containerInitializationFailed {
-                            let alert = NSAlert()
-                            alert.messageText = "Critical Storage Error"
-                            alert.informativeText = "VoiceInk cannot initialize its storage system. The app cannot continue.\n\nPlease try reinstalling the app or contact support if the issue persists."
-                            alert.alertStyle = .critical
-                            alert.addButton(withTitle: "Quit")
-                            alert.runModal()
-
-                            NSApplication.shared.terminate(nil)
-                            return
-                        }
-
                         // Migrate dictionary data from UserDefaults to SwiftData (one-time operation)
                         DictionaryMigrationService.shared.migrateIfNeeded(context: container.mainContext)
 
