@@ -42,7 +42,7 @@ struct PromptFileManager {
   let dir = userOverrideDirectory(subdirectory: subdirectory)
   do {
    try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-   let fileURL = dir.appendingPathComponent("\(name).md")
+   let fileURL = dir.appendingPathComponent("\(sanitized(name)).md")
    try content.write(to: fileURL, atomically: true, encoding: .utf8)
    logger.info("Saved user override for \(name, privacy: .public)")
   } catch {
@@ -52,14 +52,14 @@ struct PromptFileManager {
 
  /// Remove a user override, reverting to the bundle default.
  static func removeUserOverride(_ name: String, subdirectory: String? = nil) {
-  let fileURL = userOverrideDirectory(subdirectory: subdirectory).appendingPathComponent("\(name).md")
+  let fileURL = userOverrideDirectory(subdirectory: subdirectory).appendingPathComponent("\(sanitized(name)).md")
   try? FileManager.default.removeItem(at: fileURL)
   logger.info("Removed user override for \(name, privacy: .public)")
  }
 
  /// Check whether a user override exists for the given prompt.
  static func hasUserOverride(_ name: String, subdirectory: String? = nil) -> Bool {
-  let fileURL = userOverrideDirectory(subdirectory: subdirectory).appendingPathComponent("\(name).md")
+  let fileURL = userOverrideDirectory(subdirectory: subdirectory).appendingPathComponent("\(sanitized(name)).md")
   return FileManager.default.fileExists(atPath: fileURL.path)
  }
 
@@ -81,15 +81,23 @@ struct PromptFileManager {
 
  // MARK: - Private
 
+ /// Sanitize a path component to prevent directory traversal.
+ private static func sanitized(_ component: String) -> String {
+  component
+   .replacingOccurrences(of: "..", with: "")
+   .replacingOccurrences(of: "/", with: "")
+   .replacingOccurrences(of: "\\", with: "")
+ }
+
  private static func userOverrideDirectory(subdirectory: String?) -> URL {
   if let subdirectory {
-   return appSupportPromptsURL.appendingPathComponent(subdirectory, isDirectory: true)
+   return appSupportPromptsURL.appendingPathComponent(sanitized(subdirectory), isDirectory: true)
   }
   return appSupportPromptsURL
  }
 
  private static func loadUserOverride(_ name: String, subdirectory: String?) -> String? {
-  let fileURL = userOverrideDirectory(subdirectory: subdirectory).appendingPathComponent("\(name).md")
+  let fileURL = userOverrideDirectory(subdirectory: subdirectory).appendingPathComponent("\(sanitized(name)).md")
   guard FileManager.default.fileExists(atPath: fileURL.path) else { return nil }
   return try? String(contentsOf: fileURL, encoding: .utf8)
  }
