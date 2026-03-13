@@ -103,12 +103,9 @@ struct PowerModeConfig: Codable, Identifiable, Equatable {
         try container.encode(isDefault, forKey: .isDefault)
         try container.encodeIfPresent(hotkeyShortcut, forKey: .hotkeyShortcut)
     }
-    
-    
-    static func == (lhs: PowerModeConfig, rhs: PowerModeConfig) -> Bool {
-        lhs.id == rhs.id
-    }
+
 }
+
 
 struct AppConfig: Codable, Identifiable, Equatable {
     let id: UUID
@@ -120,10 +117,7 @@ struct AppConfig: Codable, Identifiable, Equatable {
         self.bundleIdentifier = bundleIdentifier
         self.appName = appName
     }
-    
-    static func == (lhs: AppConfig, rhs: AppConfig) -> Bool {
-        lhs.id == rhs.id
-    }
+
 }
 
 struct URLConfig: Codable, Identifiable, Equatable {
@@ -134,10 +128,7 @@ struct URLConfig: Codable, Identifiable, Equatable {
         self.id = id
         self.url = url
     }
-    
-    static func == (lhs: URLConfig, rhs: URLConfig) -> Bool {
-        lhs.id == rhs.id
-    }
+
 }
 
 class PowerModeManager: ObservableObject, PowerModeProviding {
