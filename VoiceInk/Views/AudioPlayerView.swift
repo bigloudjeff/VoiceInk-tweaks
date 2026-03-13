@@ -280,9 +280,7 @@ struct AudioPlayerView: View {
     @EnvironmentObject private var enhancementService: AIEnhancementService
     @Environment(\.modelContext) private var modelContext
     
-    private var transcriptionService: AudioTranscriptionService {
-        AudioTranscriptionService(modelContext: modelContext, whisperState: whisperState)
-    }
+    private var transcriptionManager: AudioTranscriptionManager { .shared }
     
     var body: some View {
         VStack(spacing: 8) {
@@ -475,7 +473,7 @@ struct AudioPlayerView: View {
         
         Task {
             do {
-                let _ = try await transcriptionService.retranscribeAudio(from: url, using: currentTranscriptionModel)
+                let _ = try await transcriptionManager.retranscribeAudio(from: url, using: currentTranscriptionModel, modelContext: modelContext, whisperState: whisperState)
                 await MainActor.run {
                     isRetranscribing = false
                     showRetranscribeSuccess = true

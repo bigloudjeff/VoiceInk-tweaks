@@ -32,9 +32,8 @@ struct TranscribeAudioFileIntent: AppIntent {
   defer { try? FileManager.default.removeItem(at: tempURL) }
 
   let context = container.mainContext
-  let service = AudioTranscriptionService(modelContext: context, whisperState: whisperState)
 
-  let transcription = try await service.retranscribeAudio(from: tempURL, using: currentModel)
+  let transcription = try await AudioTranscriptionManager.shared.retranscribeAudio(from: tempURL, using: currentModel, modelContext: context, whisperState: whisperState)
   let text = transcription.enhancedText ?? transcription.text
   return .result(value: text, dialog: "\(text)")
  }

@@ -4,8 +4,8 @@ import SwiftData
 /// Consolidates the post-transcription text pipeline:
 /// output filter -> trim -> text formatting -> word replacement.
 ///
-/// All three transcription paths (TranscriptionOrchestrator,
-/// AudioTranscriptionService, AudioFileTranscriptionManager) share
+/// All transcription paths (TranscriptionOrchestrator,
+/// AudioTranscriptionManager) share
 /// this identical sequence. Changes to the pipeline order or steps
 /// only need to happen here.
 struct TranscriptionPostProcessor {

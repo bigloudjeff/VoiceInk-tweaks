@@ -156,9 +156,8 @@ class LastTranscriptionService: ObservableObject {
                 return
             }
             
-            let transcriptionService = AudioTranscriptionService(modelContext: modelContext, whisperState: whisperState)
             do {
-                let newTranscription = try await transcriptionService.retranscribeAudio(from: audioURL, using: currentModel)
+                let newTranscription = try await AudioTranscriptionManager.shared.retranscribeAudio(from: audioURL, using: currentModel, modelContext: modelContext, whisperState: whisperState)
                 
                 let textToCopy = newTranscription.enhancedText.flatMap({ $0.isEmpty ? nil : $0 }) ?? newTranscription.text
                 ClipboardManager.copyToClipboard(textToCopy)
