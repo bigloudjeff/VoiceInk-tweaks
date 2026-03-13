@@ -207,7 +207,7 @@ class AudioTranscriptionManager: ObservableObject {
      promptName: promptName,
      transcriptionDuration: transcriptionDuration,
      enhancementDuration: enhancementDuration,
-     aiRequestSystemMessage: enhancementService.lastSystemMessageSent,
+     aiRequestSystemMessage: Transcription.redactSensitiveContext(enhancementService.lastSystemMessageSent),
      aiRequestUserMessage: enhancementService.lastUserMessageSent,
      powerModeName: powerModeName,
      powerModeEmoji: powerModeEmoji

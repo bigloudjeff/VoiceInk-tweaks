@@ -281,7 +281,7 @@ class TranscriptionOrchestrator {
     transcription.promptName = promptName
     transcription.enhancementDuration = enhancementDuration
     transcription.enhancementSource = "synchronous"
-    transcription.aiRequestSystemMessage = enhancementService.lastSystemMessageSent
+    transcription.aiRequestSystemMessage = Transcription.redactSensitiveContext(enhancementService.lastSystemMessageSent)
     transcription.aiRequestUserMessage = enhancementService.lastUserMessageSent
     transcription.aiProviderName = enhancementService.getAIService()?.selectedProvider.rawValue
     transcription.promptText = enhancementService.activePrompt?.promptText

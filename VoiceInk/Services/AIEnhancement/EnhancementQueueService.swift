@@ -94,7 +94,7 @@ class EnhancementQueueService {
                 transcription.enhancementDuration = duration
                 transcription.aiEnhancementModelName = job.aiModelName
                 transcription.promptName = job.promptName
-                transcription.aiRequestSystemMessage = job.systemMessage
+                transcription.aiRequestSystemMessage = Transcription.redactSensitiveContext(job.systemMessage)
                 transcription.aiRequestUserMessage = job.userMessage
                 transcription.enhancementSource = "background"
                 try context.save()

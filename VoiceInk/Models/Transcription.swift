@@ -76,4 +76,20 @@ final class Transcription {
         self.powerModeEmoji = powerModeEmoji
         self.transcriptionStatus = transcriptionStatus.rawValue
     }
+
+    /// Strips sensitive transient context (screen OCR, clipboard content) from a
+    /// system message before persisting. The `screenCaptureEnabled` and
+    /// `clipboardContextEnabled` booleans still record whether context was used.
+    static func redactSensitiveContext(_ message: String?) -> String? {
+        guard var text = message else { return nil }
+        // Redact <CURRENT_WINDOW_CONTEXT>...</CURRENT_WINDOW_CONTEXT>
+        if let range = text.range(of: #"<CURRENT_WINDOW_CONTEXT>[\s\S]*?</CURRENT_WINDOW_CONTEXT>"#, options: .regularExpression) {
+            text.replaceSubrange(range, with: "<CURRENT_WINDOW_CONTEXT>[redacted]</CURRENT_WINDOW_CONTEXT>")
+        }
+        // Redact <CLIPBOARD_CONTEXT>...</CLIPBOARD_CONTEXT>
+        if let range = text.range(of: #"<CLIPBOARD_CONTEXT>[\s\S]*?</CLIPBOARD_CONTEXT>"#, options: .regularExpression) {
+            text.replaceSubrange(range, with: "<CLIPBOARD_CONTEXT>[redacted]</CLIPBOARD_CONTEXT>")
+        }
+        return text
+    }
 }
