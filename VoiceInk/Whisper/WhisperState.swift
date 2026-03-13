@@ -276,10 +276,32 @@ class WhisperState: NSObject, ObservableObject, WhisperContextProvider {
  let permanentURL = self.recordingsDirectory.appendingPathComponent(fileName)
  self.recordedFile = permanentURL
 
- // Buffer chunks from the start; session created after Power Mode resolves
- let pendingChunks = OSAllocatedUnfairLock(initialState: [Data]())
+ // Buffer chunks until session is ready, then forward directly.
+ // A single lock guards both the buffer and the forward callback
+ // so the audio thread never sees a half-swapped state.
+ struct ChunkRouter {
+ var buffer: [Data] = []
+ var forward: ((Data) -> Void)? = nil
+ }
+ let chunkRouter = OSAllocatedUnfairLock(initialState: ChunkRouter())
+
  self.recorder.onAudioChunk = { data in
- pendingChunks.withLock { $0.append(data) }
+ let (fwd, buffered) = chunkRouter.withLock { router -> (((Data) -> Void)?, [Data]) in
+ if let fwd = router.forward {
+  if !router.buffer.isEmpty {
+  let buf = router.buffer
+  router.buffer.removeAll()
+  return (fwd, buf)
+  }
+  return (fwd, [])
+ }
+ router.buffer.append(data)
+ return (nil, [])
+ }
+ if let fwd {
+ for chunk in buffered { fwd(chunk) }
+ fwd(data)
+ }
  }
 
  // Start recording immediately — no waiting for network
@@ -304,18 +326,11 @@ class WhisperState: NSObject, ObservableObject, WhisperContextProvider {
  let realCallback = try await session.prepare(model: model)
 
  if let realCallback = realCallback {
- // Swap callback first so new chunks go straight to the session
- self.recorder.onAudioChunk = realCallback
- // Then flush anything that was buffered before the swap
- let buffered = pendingChunks.withLock { chunks -> [Data] in
- let result = chunks
- chunks.removeAll()
- return result
- }
- for chunk in buffered { realCallback(chunk) }
+ // Atomically activate forwarding; buffered chunks drain on next audio delivery
+ chunkRouter.withLock { $0.forward = realCallback }
  } else {
  self.recorder.onAudioChunk = nil
- pendingChunks.withLock { $0.removeAll() }
+ chunkRouter.withLock { $0.buffer.removeAll() }
  }
  }
 
