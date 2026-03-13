@@ -501,6 +501,6 @@ private struct ChangeTracker: ViewModifier {
  }
 
  private var changeSignature: String {
-  "\(configName)|\(selectedEmoji)|\(isAIEnhancementEnabled)|\(selectedPromptId?.uuidString ?? "")|\(selectedTranscriptionModelName ?? "")|\(selectedLanguage ?? "")|\(selectedAIProvider ?? "")|\(selectedAIModel ?? "")|\(useScreenCapture)|\(useClipboardContext)|\(isAutoSendEnabled)|\(isDefault)|\(appConfigCount)|\(websiteConfigCount)|\(systemInstructions?.count ?? -1)"
+  "\(configName)|\(selectedEmoji)|\(isAIEnhancementEnabled)|\(selectedPromptId?.uuidString ?? "")|\(selectedTranscriptionModelName ?? "")|\(selectedLanguage ?? "")|\(selectedAIProvider ?? "")|\(selectedAIModel ?? "")|\(useScreenCapture)|\(useClipboardContext)|\(isAutoSendEnabled)|\(isDefault)|\(appConfigCount)|\(websiteConfigCount)|\(systemInstructions ?? "")"
  }
 }
