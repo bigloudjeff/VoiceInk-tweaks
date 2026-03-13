@@ -73,7 +73,7 @@ class CustomModelManager: ObservableObject {
         
         if apiEndpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             errors.append("API endpoint cannot be empty")
-        } else if !isValidURL(apiEndpoint) {
+        } else if !Self.isValidEndpointURL(apiEndpoint) {
             errors.append("API endpoint must be a valid HTTPS URL (HTTP is only allowed for localhost)")
         }
         
@@ -106,7 +106,7 @@ class CustomModelManager: ObservableObject {
         
         if apiEndpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             errors.append("API endpoint cannot be empty")
-        } else if !isValidURL(apiEndpoint) {
+        } else if !Self.isValidEndpointURL(apiEndpoint) {
             errors.append("API endpoint must be a valid HTTPS URL (HTTP is only allowed for localhost)")
         }
         
@@ -126,7 +126,7 @@ class CustomModelManager: ObservableObject {
         return errors
     }
     
-    private func isValidURL(_ string: String) -> Bool {
+    static func isValidEndpointURL(_ string: String) -> Bool {
         guard let url = URL(string: string), let scheme = url.scheme, let host = url.host else {
             return false
         }

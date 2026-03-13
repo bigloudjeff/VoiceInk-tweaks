@@ -279,13 +279,20 @@ class ImportExportService {
                     powerModeManager.configurations = importedSettings.powerModeConfigs
                     powerModeManager.saveConfigurations()
 
-                    // Import Custom Models
+                    // Import Custom Models (validate endpoint URLs)
                     if let modelsToImport = importedSettings.customCloudModels {
+                        let validModels = modelsToImport.filter {
+                            CustomModelManager.isValidEndpointURL($0.apiEndpoint)
+                        }
+                        let skipped = modelsToImport.count - validModels.count
+                        if skipped > 0 {
+                            self.logger.warning("Skipped \(skipped, privacy: .public) custom models with invalid endpoint URLs")
+                        }
                         let customModelManager = CustomModelManager.shared
-                        customModelManager.customModels = modelsToImport
-                        customModelManager.saveCustomModels() // Ensure they are persisted
-                        whisperState.refreshAllAvailableModels() // Refresh the UI
-                        self.logger.notice("Successfully imported \(modelsToImport.count, privacy: .public) custom models.")
+                        customModelManager.customModels = validModels
+                        customModelManager.saveCustomModels()
+                        whisperState.refreshAllAvailableModels()
+                        self.logger.notice("Successfully imported \(validModels.count, privacy: .public) custom models.")
                     } else {
                         self.logger.notice("No custom models found in the imported file.")
                     }
