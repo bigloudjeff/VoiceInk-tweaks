@@ -18,6 +18,10 @@ struct TranscriptionOutputFilter {
  static func filter(_ text: String, fillerWordProvider: FillerWordProviding = FillerWordManager.shared) -> String {
   var filteredText = text
 
+  // Strip prompt echo -- whisper can echo the transcription prompt when there's
+  // silence or very short audio.
+  filteredText = stripPromptEcho(from: filteredText)
+
   // Remove <TAG>...</TAG> blocks (if enabled)
   if UserDefaults.standard.bool(forKey: UserDefaults.Keys.removeTagBlocks),
      let regex = tagBlockRegex {
@@ -48,6 +52,39 @@ struct TranscriptionOutputFilter {
   }
 
   return filteredText
+ }
+
+ /// Detect and strip whisper prompt echo from transcription output.
+ static func stripPromptEcho(from text: String) -> String {
+  let prompt = UserDefaults.standard.string(forKey: UserDefaults.Keys.transcriptionPrompt) ?? ""
+  guard !prompt.isEmpty else { return text }
+
+  let normalizedText = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+  let normalizedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+
+  guard !normalizedText.isEmpty else { return text }
+
+  if normalizedText == normalizedPrompt {
+   logger.notice("Stripped prompt echo (exact match)")
+   return ""
+  }
+
+  if normalizedPrompt.contains(normalizedText) {
+   logger.notice("Stripped prompt echo (output is substring of prompt)")
+   return ""
+  }
+
+  if normalizedText.contains(normalizedPrompt) {
+   let promptRatio = Double(normalizedPrompt.count) / Double(normalizedText.count)
+   if promptRatio > 0.8 {
+    let stripped = normalizedText.replacingOccurrences(of: normalizedPrompt, with: "")
+     .trimmingCharacters(in: .whitespacesAndNewlines)
+    logger.notice("Stripped prompt echo (prompt embedded in output, ratio: \(promptRatio, privacy: .public))")
+    return stripped
+   }
+  }
+
+  return text
  }
 
  /// Remove filler words from text. Parameterized for testability.

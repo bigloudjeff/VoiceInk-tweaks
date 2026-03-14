@@ -68,9 +68,22 @@ class LocalTranscriptionService: TranscriptionService {
  throw WhisperStateError.whisperCoreFailed
  }
  
- var text = await whisperContext.getTranscription()
+ let result = await whisperContext.getTranscriptionResult()
+ var text = result.text
 
- logger.notice(" Local transcription completed successfully.")
+ // Reject hallucinations: if whisper reports high no-speech probability,
+ // the output is likely fabricated from silence or noise.
+ let noSpeechThreshold: Float = 0.6
+ if result.maxNoSpeechProb > noSpeechThreshold {
+  logger.warning("Rejecting likely hallucination (no_speech_prob: \(result.maxNoSpeechProb, privacy: .public)): \(text, privacy: .private)")
+  if await contextProvider?.whisperContext !== whisperContext {
+   await whisperContext.releaseResources()
+   self.whisperContext = nil
+  }
+  return ""
+ }
+
+ logger.notice("Local transcription completed (no_speech_prob: \(result.maxNoSpeechProb, privacy: .public)).")
  
  // Only release resources if we created a new context (not using the shared one)
  if await contextProvider?.whisperContext !== whisperContext {

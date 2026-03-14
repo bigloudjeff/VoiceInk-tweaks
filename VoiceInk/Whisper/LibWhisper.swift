@@ -101,13 +101,32 @@ actor WhisperContext {
         return success
     }
 
+    struct TranscriptionResult {
+        let text: String
+        /// Highest no-speech probability across all segments (0.0 = speech, 1.0 = silence/noise).
+        let maxNoSpeechProb: Float
+    }
+
     func getTranscription() -> String {
-        guard let context = context else { return "" }
+        return getTranscriptionResult().text
+    }
+
+    func getTranscriptionResult() -> TranscriptionResult {
+        guard let context = context else { return TranscriptionResult(text: "", maxNoSpeechProb: 1.0) }
         var transcription = ""
-        for i in 0..<whisper_full_n_segments(context) {
+        var maxNoSpeechProb: Float = 0.0
+        let segmentCount = whisper_full_n_segments(context)
+        for i in 0..<segmentCount {
             transcription += String(cString: whisper_full_get_segment_text(context, i))
+            let prob = whisper_full_get_segment_no_speech_prob(context, i)
+            if prob > maxNoSpeechProb {
+                maxNoSpeechProb = prob
+            }
         }
-        return transcription
+        if segmentCount == 0 {
+            maxNoSpeechProb = 1.0
+        }
+        return TranscriptionResult(text: transcription, maxNoSpeechProb: maxNoSpeechProb)
     }
 
     static func createContext(path: String) async throws -> WhisperContext {
