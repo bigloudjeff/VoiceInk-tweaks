@@ -75,7 +75,9 @@ struct ReasoningConfig {
   return nil
  }
 
- // For models that need custom params instead of reasoning_effort
+ // For models that need custom params instead of reasoning_effort.
+ // Not yet wired into the LLM request pipeline -- LLMKit needs extra body
+ // parameter support first. Kept here so the logic is ready when it is.
  static func getExtraBodyParameters(for modelName: String) -> [String: Any]? {
   if cerebrasDisableReasoningModels.contains(modelName) {
    return ["disable_reasoning": true]
