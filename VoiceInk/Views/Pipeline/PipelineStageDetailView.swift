@@ -215,7 +215,7 @@ private struct RecordingStageContent: View {
       label: "Pause Media While Recording",
       infoMessage: "Pauses playing media when recording starts and resumes when done."
      ) {
-      Picker("Resume Delay", selection: $mediaController.audioResumptionDelay) {
+      Picker("Resume Delay", selection: $playbackController.mediaResumptionDelay) {
        Text("0s").tag(0.0)
        Text("1s").tag(1.0)
        Text("2s").tag(2.0)

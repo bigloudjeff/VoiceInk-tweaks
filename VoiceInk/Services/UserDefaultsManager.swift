@@ -78,6 +78,7 @@ extension UserDefaults {
         static let isSystemMuteEnabled = "isSystemMuteEnabled"
         static let isPauseMediaEnabled = "isPauseMediaEnabled"
         static let audioResumptionDelay = "audioResumptionDelay"
+        static let mediaResumptionDelay = "mediaResumptionDelay"
         static let audioRetentionPeriod = "AudioRetentionPeriod"
         static let isAudioCleanupEnabled = "IsAudioCleanupEnabled"
         static let lastUsedMicrophoneDeviceID = "lastUsedMicrophoneDeviceID"

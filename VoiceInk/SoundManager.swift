@@ -85,30 +85,41 @@ class SoundManager: ObservableObject, SoundPlaying {
 
     func playStartSound() {
         guard isSoundFeedbackEnabled else { return }
+        playReliably(customStartSound ?? startSound, volume: 0.4)
+    }
 
-        if let custom = customStartSound {
-            custom.play()
-        } else {
-            startSound?.volume = 0.4
-            startSound?.play()
+    /// Duration of the currently playing start sound, or 0 if not playing.
+    var startSoundRemainingDuration: TimeInterval {
+        if let custom = customStartSound, custom.isPlaying {
+            return max(0, custom.duration - custom.currentTime)
         }
+        if let sound = startSound, sound.isPlaying {
+            return max(0, sound.duration - sound.currentTime)
+        }
+        return 0
     }
 
     func playStopSound() {
         guard isSoundFeedbackEnabled else { return }
-
-        if let custom = customStopSound {
-            custom.play()
-        } else {
-            stopSound?.volume = 0.4
-            stopSound?.play()
-        }
+        playReliably(customStopSound ?? stopSound, volume: 0.4)
     }
-    
+
     func playEscSound() {
         guard isSoundFeedbackEnabled else { return }
-        escSound?.volume = 0.3
-        escSound?.play()
+        playReliably(escSound, volume: 0.3)
+    }
+
+    /// Play a sound reliably even during rapid repeated calls.
+    /// Resets to the start if already playing, and re-prepares after
+    /// playback so the next call has zero latency.
+    private func playReliably(_ player: AVAudioPlayer?, volume: Float = 0.4) {
+        guard let player else { return }
+        if player.isPlaying {
+            player.currentTime = 0
+        }
+        player.volume = volume
+        player.play()
+        player.prepareToPlay()
     }
     
     var isEnabled: Bool {

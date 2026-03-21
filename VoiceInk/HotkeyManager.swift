@@ -414,7 +414,8 @@ class HotkeyManager: ObservableObject {
             fnDebounceTask?.cancel()
             fnDebounceTask = Task { [pendingState = isComboActive, pendingTime = eventTime] in
                 try? await Task.sleep(for: .milliseconds(40))
-                if self.pendingFnKeyState == pendingState {
+                guard !Task.isCancelled, self.pendingFnKeyState == pendingState else { return }
+                Task { @MainActor in
                     await self.processKeyPress(isKeyPressed: pendingState, eventTime: pendingTime)
                 }
             }

@@ -24,6 +24,10 @@ class PlaybackController {
             }
         }
     }
+
+    var mediaResumptionDelay: Double = UserDefaults.standard.double(forKey: UserDefaults.Keys.mediaResumptionDelay) {
+        didSet { UserDefaults.standard.set(mediaResumptionDelay, forKey: UserDefaults.Keys.mediaResumptionDelay) }
+    }
     
     private init() {
         mediaController = MediaRemoteAdapter.MediaController()
@@ -81,7 +85,7 @@ class PlaybackController {
     func resumeMedia() async {
         let shouldResume = wasPlayingWhenRecordingStarted
         let originalBundleId = originalMediaAppBundleId
-        let delay = MediaController.shared.audioResumptionDelay
+        let delay = mediaResumptionDelay
 
         defer {
             wasPlayingWhenRecordingStarted = false

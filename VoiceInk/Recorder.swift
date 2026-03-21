@@ -19,6 +19,7 @@ class Recorder: NSObject, ObservableObject {
  /// Dedicated serial queue for hardware setup.
  private let audioSetupQueue = DispatchQueue(label: "com.prakashjoshipax.voiceink.audioSetup", qos: .userInitiated)
  private var audioRestorationTask: Task<Void, Never>?
+ private var muteTask: Task<Void, Never>?
  private var hasDetectedAudioInCurrentSession = false
  private let smoothedValuesLock = NSLock()
  private var smoothedAverage: Float = 0
@@ -141,9 +142,16 @@ class Recorder: NSObject, ObservableObject {
  audioRestorationTask?.cancel()
  audioRestorationTask = nil
 
- Task { [weak self] in
+ muteTask?.cancel()
+ muteTask = Task { [weak self] in
  guard let self = self else { return }
  await self.playbackController.pauseMedia()
+ // Wait for the start sound to finish before muting system audio
+ let remaining = SoundManager.shared.startSoundRemainingDuration
+ if remaining > 0 {
+  try? await Task.sleep(for: .seconds(remaining + 0.05))
+ }
+ guard !Task.isCancelled else { return }
  _ = await self.mediaController.muteSystemAudio()
  }
 
@@ -201,9 +209,13 @@ class Recorder: NSObject, ObservableObject {
 
  audioMeter = AudioMeter(averagePower: 0, peakPower: 0)
 
+ // Cancel any pending mute that hasn't executed yet (rapid push-to-talk)
+ muteTask?.cancel()
+ muteTask = nil
+
  if restoreAudio {
  audioRestorationTask = Task {
- await mediaController.unmuteSystemAudio()
+ await mediaController.forceUnmuteIfResponsible()
  await playbackController.resumeMedia()
  }
  }
@@ -211,8 +223,10 @@ class Recorder: NSObject, ObservableObject {
  }
 
  func restoreAudio() {
+ muteTask?.cancel()
+ muteTask = nil
  audioRestorationTask = Task {
- await mediaController.unmuteSystemAudio()
+ await mediaController.forceUnmuteIfResponsible()
  await playbackController.resumeMedia()
  }
  }

@@ -75,6 +75,20 @@ final class MediaController {
         await task.value
     }
 
+    /// Unconditionally unmute if we were responsible for muting.
+    /// Bypasses generation checks and delay -- used by stopRecording to guarantee
+    /// audio is restored even during rapid push-to-talk cycles.
+    func forceUnmuteIfResponsible() async {
+        unmuteTask?.cancel()
+        unmuteTask = nil
+
+        if didMuteAudio && !wasAudioMutedBeforeRecording {
+            _ = setSystemMuted(false)
+        }
+
+        didMuteAudio = false
+    }
+
     private func getDefaultOutputDevice() -> AudioDeviceID? {
         var deviceID = AudioDeviceID(0)
         var propertySize = UInt32(MemoryLayout<AudioDeviceID>.size)
